@@ -89,11 +89,11 @@ void auto_aim() {
       lowest_error = 1000;
       depth = 0;
       while(lowest_error > 2) {
-        // Looks through a 10x10 grid of potential launch velocities and angles, then repeatedly zooms in on the closest launch specifications until desired accuracy is reached
+        // Looks through a 11x11 grid of potential launch velocities and angles, then repeatedly zooms in on the closest launch specifications until desired accuracy is reached
         // This assumes that it's impossible for the best launch parameters to be closer to a less accurate set of more zoomed out parameters than the best zoomed out parameters
         // If this becomes an issue or computation time isn't significant, I can fix this by increasing the increments to include points around the next closest parameter sets
-        for(int vel_i = -5; vel_i<5; vel_i++) {
-          for(int theta_i = -5; theta_i<5; theta_i++) {
+        for(int vel_i = -5; vel_i <= 5; vel_i++) {
+          for(int theta_i = -5; theta_i <= 5; theta_i++) {
             error = trajectory_error(x_pos, y_pos, x_vel, y_vel, best_theta + theta_i * theta_increment, best_vel + vel_i * vel_increment);
             if(error < lowest_error) {
               lowest_error = error;
