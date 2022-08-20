@@ -40,7 +40,7 @@ std::shared_ptr<okapi::OdomChassisController> chassis_controller = okapi::Chassi
 std::shared_ptr<okapi::ChassisModel> chassis_model = std::shared_ptr<okapi::ChassisModel>(chassis_controller -> getModel());;
 std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller = okapi::AsyncMotionProfileControllerBuilder()
 	.withOutput(chassis_controller)
-	// Max speed 3 m/s, max acceleration 3 m/s^2, max jerk 1000 m/s^3
+	// Max speed 3.66 m/s, max acceleration 3 m/s^2, max jerk 1000 m/s^3
 	.withLimits({3.66, 3, 1000})
 	.withLogger(okapi::Logger::getDefaultLogger())
 	.buildMotionProfileController();
