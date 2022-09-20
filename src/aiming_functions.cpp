@@ -12,10 +12,10 @@ double trajectory_error(double x_pos, double y_pos, double x_vel, double y_vel, 
   // Then use the quadratic formula...
   double discriminant = pow((launch_vel*sin(launch_angle)),2) - 4*(launch_height - goal_height)*(g/2);
   if(discriminant < 0) { // Complex root -> doesn't reach height
-    std::cout << "Trajectory with theta " << theta << " and launch velocity" << launch_vel << " in/s^2 will never reach target height." << std::endl;
+    std::cout << "Trajectory with theta " << theta << " and launch velocity" << launch_vel << " in/s will never reach target height." << std::endl;
     return 9001;
   }
-  double t = (-launch_vel*sin(launch_angle) + sqrt(discriminant))/(2*(launch_height-goal_height));
+  double t = (-launch_vel*sin(launch_angle) - sqrt(discriminant))/g;
   double x_end_pos = x_pos + t*launch_vel*cos(launch_angle)*cos(theta) + t*x_vel;
   double y_end_pos = y_pos + t*launch_vel*cos(launch_angle)*sin(theta) + t*y_vel;
   double error = sqrt(pow(goal_x-x_end_pos,2) + pow(goal_y-y_end_pos,2));
