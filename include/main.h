@@ -67,6 +67,8 @@
  */
 extern double const launch_height;
 extern double const launch_angle;
+extern double const offset;
+extern double const alpha;
 extern double const launch_max_vel;
 extern double const goal_height;
 extern double const goal_x;

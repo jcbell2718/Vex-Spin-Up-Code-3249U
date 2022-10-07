@@ -3,6 +3,8 @@
 // Constants
 double const launch_height = 16.00;
 double const launch_angle = 30.00;
+double const offset = 5;
+double const alpha = -20;
 double const launch_max_vel = 2500./60.*3.25*PI/2.; // rpm / 60 (sec/min) * flywheel diameter * pi. / 2 This doesn't consider frictional losses atm.
 double const goal_height = 30.00;
 double const goal_x = 10.75*12;
