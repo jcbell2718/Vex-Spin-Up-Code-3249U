@@ -77,7 +77,7 @@ void auto_aim() {
       launch_vel = ideal_velocity(x_pos, y_pos, low_goal_x, low_goal_y, 0);
     } else {
       // Determines best launch parameters for high goal using gradient descent
-      // Uses innacurate estimation as starting point
+      // Uses inaccurate estimation as starting point
       launch_theta = angle_to_goal(x_pos, y_pos, goal_x, goal_y);
       launch_vel = ideal_velocity(x_pos, y_pos, goal_x, goal_y, goal_height);
       // Lock in robot velocity to avoid errors since this is multithreaded
