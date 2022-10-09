@@ -32,14 +32,14 @@ okapi::ADIEncoder center_encoder(CENTER_ENCODER_PORT_TOP, CENTER_ENCODER_PORT_BO
 okapi::ADIEncoder left_encoder(LEFT_ENCODER_PORT_TOP, LEFT_ENCODER_PORT_BOTTOM, false);
 okapi::ADIEncoder right_encoder(RIGHT_ENCODER_PORT_TOP, RIGHT_ENCODER_PORT_BOTTOM, false);
 std::shared_ptr<okapi::OdomChassisController> chassis_controller = okapi::ChassisControllerBuilder()
-	.withMotors(front_left_mtr, front_right_mtr, back_left_mtr, back_right_mtr)
+	.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
 	.withSensors(left_encoder, right_encoder, center_encoder)
-	// Blue gearset, no external gear ratio, 3.25 inch diameter wheels, 14.75 inch wheel track
-	.withDimensions({okapi::AbstractMotor::gearset::blue, (1./1.)}, {{3.25_in, 14.75_in, 0_in, 3.25_in}, okapi::imev5BlueTPR})
+	// Red gearset, 36/85 gear ratio, 3.25 inch diameter wheels, 16.4 inch wheel track
+	.withDimensions({okapi::AbstractMotor::gearset::red, (36./84.)}, {{3.25_in, 16.4_in}, okapi::imev5RedTPR})
 	// Tracking wheels diameter (2.75 in) and track (7 in), middle encoder distance (1 in) and diameter (2.75 in), and TPR
 	.withOdometry({{2.75_in, 7_in, 1_in, 2.75_in}, okapi::quadEncoderTPR})
 	.buildOdometry();
-std::shared_ptr<okapi::ChassisModel> chassis_model = std::shared_ptr<okapi::ChassisModel>(chassis_controller -> getModel());;
+std::shared_ptr<okapi::XDriveModel> chassis_model = std::dynamic_pointer_cast<okapi::XDriveModel>(chassis_controller -> getModel());
 std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller = okapi::AsyncMotionProfileControllerBuilder()
 	.withOutput(chassis_controller)
 	// Max speed 3.66 m/s, max acceleration 3 m/s^2, max jerk 1000 m/s^3
@@ -65,9 +65,14 @@ std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_contro
 	.withLogger(okapi::Logger::getDefaultLogger())
 	.build();
 
+// Intake
+okapi::Motor intake_mtr(INTAKE_MOTOR_PORT, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+
+pros::Optical optical_sensor(OPTICAL_PORT);
 pros::Imu inertial = pros::Imu(INERTIAL_PORT);
 pros::Gps gps(GPS_PORT, 0, 0, 0);
 pros::Controller controller_master(pros::E_CONTROLLER_MASTER);
+pros::Controller controller_partner(pros::E_CONTROLLER_PARTNER);
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -122,18 +127,20 @@ void velocity_recording_fn() {
 }
 
 void competition_initialize() {
-	// Initializes the velocity recording task
+	// Initializes tasks
 	pros::Task velocity_recording(velocity_recording_fn);
+	pros::Task auto_aiming(auto_aim);
+
 	// Auton selection menu through the controller
 	bool auton_selected = false;
 	controller_master.print(0, 0, "Selecting Auton:");
 	controller_master.print(1, 0, auton.c_str());
 	while(auton_selected == false) {
-		if (controller_master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+		if(controller_master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
 			// Submit choice
 			auton_selected = true;
 			pros::delay(95); // The clear function is blocked for 110 ms, so this helps avoid problems there
-		} else if (controller_master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+		} else if(controller_master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
 			// Cycle through choices backwards
 			auton_index--;
 			if(auton_index < 0) auton_index = sizeof(auton_list) - 1;
@@ -203,18 +210,52 @@ void autonomous() {
  */
 void opcontrol() {
 	controller_master.clear();
+	double power = 0;
+	double turning = 0;
+	double strafe = 0;
+	double manual_vel;
+	double manual_theta;
+	int delay = 20;
 	while (true) {
 		// Update Controller LCD display after every cycle
-		if(auto_aim_enabled) {
-			controller_master.print(0, 0, "Auto-Aim: ON");
+		if(auto_aim_enabled) controller_master.print(0, 0, "Auto-Aim: ON");
+		else controller_master.print(0, 0, "Auto-Aim: OFF");
+		if(aiming_for_low_goal && auto_aim_enabled) controller_master.print(1, 0, "Target: Low");
+		else if(auto_aim_enabled) controller_master.print(1, 0, "Target: High");
+		else controller_master.print(1, 0, "Launch RPM: %d", flywheel_controller->getTarget());
+		controller_partner.print(1, 0, "Launch RPM: %d", flywheel_controller->getTarget());
+
+		// Chassis Control
+		if(abs(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) < 2) power = 0;
+		else power = powf(static_cast<float>(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y))/127., 3.);
+		if(abs(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X)) < 2) strafe = 0;
+		else strafe = powf(static_cast<float>(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X))/127., 3.);
+		if(abs(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)) < 2) turning = 0;
+		else turning = powf(static_cast<float>(controller_master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X))/127., 3.);
+		if(controller_master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+			chassis_model -> setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+			chassis_model -> stop();
 		} else {
-			controller_master.print(0, 0, "Auto-Aim: OFF");
+			chassis_model -> setBrakeMode(okapi::AbstractMotor::brakeMode::coast);
+			chassis_model -> xArcade(strafe, power, turning);
 		}
-		if(aiming_for_low_goal) {
-			controller_master.print(1, 0, "Target: Low");
-		} else {
-			controller_master.print(1, 0, "Target: High");
+
+		// Auto-aim toggle
+		if(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			auto_aim_enabled = !auto_aim_enabled;
+			while(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_X)) pros::delay(10);
 		}
-		pros::delay(20);
+
+		// Manual aiming
+		if(!auto_aim_enabled) {
+			turret_controller -> setTarget(turret_controller->getTarget() + 60.*(static_cast<double>(controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X))/127.)*(static_cast<double>(delay)/1000.));
+			flywheel_controller -> setTarget(flywheel_controller->getTarget() + 100.*(static_cast<double>(controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y))/127.)*(static_cast<double>(delay)/1000.));
+		}
+
+		// Intake
+		if(!((optical_sensor.get_rgb().blue >= 20 && optical_sensor.get_rgb().blue <= 30) && (optical_sensor.get_rgb().red >= 100 && optical_sensor.get_rgb().red <= 255) && (optical_sensor.get_rgb().green >= 100 && optical_sensor.get_rgb().green <= 255))) intake_mtr.moveVoltage(12000);
+		else intake_mtr.moveVoltage(0);
+
+		pros::delay(delay);
 	}
 }

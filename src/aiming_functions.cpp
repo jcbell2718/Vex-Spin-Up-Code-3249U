@@ -67,53 +67,70 @@ void auto_aim() {
   int depth;
   bool oscillating;
   double r;
-  while(auto_aim_enabled == true) {
-    std::cout << "Beginning Targeting Calculations..." << std::endl;
-    x_pos = chassis_controller -> getState().x.convert(okapi::inch);
-    y_pos = chassis_controller -> getState().y.convert(okapi::inch);
-    if(aiming_for_low_goal) {
-      // Assumes ideal values are true when aiming for the low goal, since accuracy is less important
-      launch_theta = angle_to_goal(x_pos, y_pos, low_goal_x, low_goal_y);
-      launch_vel = ideal_velocity(x_pos, y_pos, low_goal_x, low_goal_y, 0);
-    } else {
-      // Determines best launch parameters for high goal using gradient descent
-      // Uses inaccurate estimation as starting point
-      launch_theta = angle_to_goal(x_pos, y_pos, goal_x, goal_y);
-      launch_vel = ideal_velocity(x_pos, y_pos, goal_x, goal_y, goal_height);
-      // Lock in robot velocity to avoid errors since this is multithreaded
-      x_vel = global_x_vel;
-      y_vel = global_y_vel;
-      error = 9000;
-      error_0 = 9000;
-      depth = 0;
-      // Initial coefficient for gradient descent - good for low curvature
-      r = 10;
-      oscillating = false;
-      // Calculate initial error outside loop to remove need to store past launch parameters
-      error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel);
-      error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001);
-      error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel);
-      error_0 = error;
-      // Gradient descent loop - exits if it gets stuck at depth 50
-      while(error > 2 && depth < 50) {
-        // Once error starts increasing, high r is leading to overshoot and oscillation
-        if(error > error_0) oscillating = true;
-        // Once oscillation begins, have r approach .2 - smaller value better at high curvature
-        if(oscillating == true) r = .5*r + .1;
-        // Updates launch parameters using the gradient
-        launch_vel = launch_vel - r*(error_dv - error)/.001;
-        launch_theta = launch_theta - r*(error_dt - error)/.001;
-        error_0 = error;
+  double rotation_output;
+  double TN;
+  double TO;
+  double absolute_minimum;
+  while(true) {
+    while(auto_aim_enabled == true) {
+      std::cout << "Beginning Targeting Calculations..." << std::endl;
+      x_pos = chassis_controller -> getState().x.convert(okapi::inch);
+      y_pos = chassis_controller -> getState().y.convert(okapi::inch);
+      if(aiming_for_low_goal) {
+        // Assumes ideal values are true when aiming for the low goal, since accuracy is less important
+        launch_theta = angle_to_goal(x_pos, y_pos, low_goal_x, low_goal_y);
+        launch_vel = ideal_velocity(x_pos, y_pos, low_goal_x, low_goal_y, 0);
+      } else {
+        // Determines best launch parameters for high goal using gradient descent
+        // Uses inaccurate estimation as starting point
+        launch_theta = angle_to_goal(x_pos, y_pos, goal_x, goal_y);
+        launch_vel = ideal_velocity(x_pos, y_pos, goal_x, goal_y, goal_height);
+        // Lock in robot velocity to avoid errors since this is multithreaded
+        x_vel = global_x_vel;
+        y_vel = global_y_vel;
+        error = 9000;
+        error_0 = 9000;
+        depth = 0;
+        // Initial coefficient for gradient descent - good for low curvature
+        r = 10;
+        oscillating = false;
+        // Calculate initial error outside loop to remove need to store past launch parameters
         error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel);
         error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001);
         error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel);
-        depth++;
+        error_0 = error;
+        // Gradient descent loop - exits if it gets stuck at depth 50
+        while(error > 2 && depth < 50) {
+          // Once error starts increasing, high r is leading to overshoot and oscillation
+          if(error > error_0) oscillating = true;
+          // Once oscillation begins, have r approach .2 - smaller value better at high curvature
+          if(oscillating == true) r = .5*r + .1;
+          // Updates launch parameters using the gradient
+          launch_vel = launch_vel - r*(error_dv - error)/.001;
+          launch_theta = launch_theta - r*(error_dt - error)/.001;
+          error_0 = error;
+          error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel);
+          error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001);
+          error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel);
+          depth++;
+        }
       }
+      std::cout << "Targeting Complete" << std::endl;
+      std::cout << "Trajectory Theta: " << launch_theta << std::endl;
+      std::cout << "Trajectory Velocity: " << launch_vel << std::endl;
+
+      TN = fmod(launch_theta/(2.*PI)*360. - inertial.get_yaw() + 5.*360., 360.);
+      TO = fmod((turret_controller -> getTarget()) + 9000.*360., 360.);
+      absolute_minimum = std::min({abs(TN - TO), abs(TN - TO + 360), abs(TN - TO - 360)});
+      if(absolute_minimum == abs(TN - TO)) rotation_output = (turret_controller -> getTarget()) + (TN - TO);
+      else if(absolute_minimum == abs(TN - TO + 360)) rotation_output = (turret_controller -> getTarget()) + (TN - TO + 360);
+      else rotation_output = (turret_controller -> getTarget()) + (TN - TO - 360);
+      std::cout << "Turret Rotation: " << rotation_output << std::endl;
+
+      turret_controller -> setTarget(rotation_output); 
+      flywheel_controller -> setTarget(launch_vel/(3*PI)*2);
+      pros::delay(10);
     }
-    std::cout << "Targeting Complete" << std::endl;
-    std::cout << "Trajectory Theta: " << launch_theta << std::endl;
-    std::cout << "Trajectory Velocity: " << launch_vel << std::endl;
-    turret_controller -> setTarget(launch_theta/(2*PI)*360 - inertial.get_yaw()); // Convert from radians to degrees
-    flywheel_controller -> setTarget(launch_vel/(3*PI)*2);
+    pros::delay(500);
   }
 }

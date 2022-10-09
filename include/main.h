@@ -37,13 +37,15 @@
 /**
  * Global defines
  */
- # define PI 3.14159265358979323846
+#define PI 3.14159265358979323846
 #define FRONT_LEFT_MOTOR_PORT 2
 #define FRONT_RIGHT_MOTOR_PORT 1
 #define BACK_LEFT_MOTOR_PORT 4
 #define BACK_RIGHT_MOTOR_PORT 3
 #define TURRET_MOTOR_PORT 5
 #define FLYWHEEL_MOTOR_PORT 6
+#define INTAKE_MOTOR_PORT 7
+#define OPTICAL_PORT 18
 #define INERTIAL_PORT 19
 #define GPS_PORT 20
 #define CENTER_ENCODER_PORT_TOP 'A'
@@ -61,6 +63,7 @@
  */
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
+#include "aiming_functions.hpp"
 
 /**
  * Inter-File Global Variables
@@ -81,7 +84,7 @@ extern double global_y_vel;
 extern bool auto_aim_enabled;
 extern bool aiming_for_low_goal;
 extern std::shared_ptr<okapi::OdomChassisController> chassis_controller;
-extern std::shared_ptr<okapi::ChassisModel> chassis_model;
+extern std::shared_ptr<okapi::XDriveModel> chassis_model;
 extern std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller;
 extern std::shared_ptr<okapi::AsyncPositionController<double, double> > turret_controller;
 extern std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_controller;
