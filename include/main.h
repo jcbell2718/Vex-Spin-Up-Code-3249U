@@ -64,6 +64,7 @@
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 #include "aiming_functions.hpp"
+#include "auton_functions.hpp"
 
 /**
  * Inter-File Global Variables

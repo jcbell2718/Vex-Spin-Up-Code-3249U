@@ -48,11 +48,11 @@ std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller 
 	.buildMotionProfileController();
 
 // Controller for launcher rotation
-okapi::Motor turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::degrees);
 std::shared_ptr<okapi::AsyncPositionController<double, double> > turret_controller = okapi::AsyncPosControllerBuilder()
 	.withMotor(turret_mtr)
 	.withSensor(okapi::IntegratedEncoder(turret_mtr))
-	.withGearset({okapi::AbstractMotor::gearset::red, (1./1.)})
+	.withGearset({okapi::AbstractMotor::gearset::red, (148./32.)})
 	.withLogger(okapi::Logger::getDefaultLogger())
 	.build();
 
@@ -243,13 +243,19 @@ void opcontrol() {
 		// Auto-aim toggle
 		if(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
 			auto_aim_enabled = !auto_aim_enabled;
-			while(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_X)) pros::delay(10);
+			while(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_X)) pros::delay(5);
 		}
 
 		// Manual aiming
 		if(!auto_aim_enabled) {
-			turret_controller -> setTarget(turret_controller->getTarget() + 60.*(static_cast<double>(controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X))/127.)*(static_cast<double>(delay)/1000.));
-			flywheel_controller -> setTarget(flywheel_controller->getTarget() + 100.*(static_cast<double>(controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y))/127.)*(static_cast<double>(delay)/1000.));
+			turret_controller -> setTarget(unnormalized_rotation_to(atan2(controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y), controller_partner.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X))/(2.*PI)*360 - inertial.get_yaw(), (turret_controller -> getTarget())));
+			if(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+				flywheel_controller -> setTarget((flywheel_controller -> getTarget()) + 50);
+				while(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) pros::delay(5);
+			} else if(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+				flywheel_controller -> setTarget((flywheel_controller -> getTarget()) - 50);
+				while(controller_partner.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) pros::delay(5);
+			}
 		}
 
 		// Intake

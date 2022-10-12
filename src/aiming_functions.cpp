@@ -47,9 +47,27 @@ double ideal_velocity(double x_pos, double y_pos, double target_x, double target
 }
 
 double angle_to_goal(double x_pos, double y_pos, double target_x, double target_y) {
-  // Calculates the angle from the robot to the goal
+  // Calculates the angle from the robot to the goal in radians
   double theta = atan2(target_y - y_pos, target_x - x_pos);
   return theta;
+}
+
+double rotational_distance(double target, double current) {
+  double T;
+  double C;
+  double absolute_minimum;
+  T = fmod(target + 9000.*360., 360.);
+  C = fmod(current + 9000.*360., 360.);
+  absolute_minimum = std::min({abs(T - C), abs(T - C + 360.), abs(T - C - 360.)});
+  if(absolute_minimum == abs(T - C)) return T - C;
+  else if(absolute_minimum == abs(T - C + 360)) return T - C + 360.;
+  else return T - C - 360.;
+}
+
+double unnormalized_rotation_to(double target, double current) {
+  // Calculates the un-normalized angle the shortest distance away from the normalized target
+  // i.e. 360 to 20 = 380 rather than 20
+  return current + rotational_distance(target, current);
 }
 
 void auto_aim() {
@@ -68,9 +86,6 @@ void auto_aim() {
   bool oscillating;
   double r;
   double rotation_output;
-  double TN;
-  double TO;
-  double absolute_minimum;
   while(true) {
     while(auto_aim_enabled == true) {
       std::cout << "Beginning Targeting Calculations..." << std::endl;
@@ -97,7 +112,7 @@ void auto_aim() {
         // Calculate initial error outside loop to remove need to store past launch parameters
         error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel);
         error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001);
-        error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel);
+        error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .0001, launch_vel);
         error_0 = error;
         // Gradient descent loop - exits if it gets stuck at depth 50
         while(error > 2 && depth < 50) {
@@ -107,24 +122,20 @@ void auto_aim() {
           if(oscillating == true) r = .5*r + .1;
           // Updates launch parameters using the gradient
           launch_vel = launch_vel - r*(error_dv - error)/.001;
-          launch_theta = launch_theta - r*(error_dt - error)/.001;
+          launch_theta = launch_theta - r*(error_dt - error)/.0001;
           error_0 = error;
           error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel);
           error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001);
-          error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel);
+          error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .0001, launch_vel);
           depth++;
         }
       }
+      // Converts the output theta into a value that prevents overrotation and only cares about equivalent angle, not absolute angle
+      rotation_output = unnormalized_rotation_to(launch_theta/(2.*PI)*360. - inertial.get_yaw(), double (turret_controller -> getTarget()));
+
       std::cout << "Targeting Complete" << std::endl;
       std::cout << "Trajectory Theta: " << launch_theta << std::endl;
       std::cout << "Trajectory Velocity: " << launch_vel << std::endl;
-
-      TN = fmod(launch_theta/(2.*PI)*360. - inertial.get_yaw() + 5.*360., 360.);
-      TO = fmod((turret_controller -> getTarget()) + 9000.*360., 360.);
-      absolute_minimum = std::min({abs(TN - TO), abs(TN - TO + 360), abs(TN - TO - 360)});
-      if(absolute_minimum == abs(TN - TO)) rotation_output = (turret_controller -> getTarget()) + (TN - TO);
-      else if(absolute_minimum == abs(TN - TO + 360)) rotation_output = (turret_controller -> getTarget()) + (TN - TO + 360);
-      else rotation_output = (turret_controller -> getTarget()) + (TN - TO - 360);
       std::cout << "Turret Rotation: " << rotation_output << std::endl;
 
       turret_controller -> setTarget(rotation_output); 
