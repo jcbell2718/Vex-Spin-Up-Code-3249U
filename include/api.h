@@ -15,7 +15,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-
+#pragma once
 #ifndef _PROS_API_H_
 #define _PROS_API_H_
 
@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #else /* (not) __cplusplus */
 #include <errno.h>
 #include <math.h>
@@ -77,6 +78,14 @@
 #include "pros/screen.hpp"
 #include "pros/vision.hpp"
 #include "pros/link.hpp"
+#include "okapi/api/units/QTime.hpp"
+#include "okapi/api/util/timeUtil.hpp"
+#include "okapi/impl/device/button/adiButton.hpp"
+#include "okapi/impl/device/button/controllerButton.hpp"
+#include "okapi/impl/device/controllerUtil.hpp"
+#include "okapi/impl/device/motor/motorGroup.hpp"
+#include "pros/adi.hpp"
+#include "pros/optical.hpp"
 #endif
 
 #endif  // _PROS_API_H_

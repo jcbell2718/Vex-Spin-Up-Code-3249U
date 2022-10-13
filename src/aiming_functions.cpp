@@ -1,25 +1,34 @@
 #include "main.h"
 
-double trajectory_error(double x_pos, double y_pos, double x_vel, double y_vel, double theta, double launch_vel) {
-  // Calculates the distance in a given trajectory from the ideal end point
-  //
-  //       [|v_0|cos(phi)cos(theta)]
-  // v_0 = [|v_0|cos(phi)sin(theta)]
-  //       [     |v_0|sin(phi)     ]
-  //
-  // h_t = h_launcher + |v_0|sin(phi)t + g/2*t^2
-  // 0 = (h_launcher - h_goal) + |v_0|sin(phi)t + g/2*t^2
-  // Then use the quadratic formula...
-  double discriminant = pow((launch_vel*sin(launch_angle)),2) - 4*(launch_height - goal_height)*(g/2);
-  if(discriminant < 0) { // Complex root -> doesn't reach height
-    std::cout << "Trajectory with theta " << theta << " and launch velocity" << launch_vel << " in/s will never reach target height." << std::endl;
-    return 9001;
-  }
-  double t = (-launch_vel*sin(launch_angle) - sqrt(discriminant))/g;
-  double x_end_pos = (x_pos + offset*cos(theta + alpha)) + t*launch_vel*cos(launch_angle)*cos(theta) + t*x_vel;
-  double y_end_pos = (y_pos + offset*sin(theta + alpha)) + t*launch_vel*cos(launch_angle)*sin(theta) + t*y_vel;
-  double error = sqrt(pow(goal_x-x_end_pos,2) + pow(goal_y-y_end_pos,2));
-  return error;
+void velocity_recording_fn() {
+	// Records robot velocity globally, although specific values are frozen during computations to avoid strange behavior
+	double old_x_pos = chassis_controller -> getState().x.convert(okapi::inch);
+	double old_y_pos = chassis_controller -> getState().y.convert(okapi::inch);
+	double new_x_pos;
+	double new_y_pos;
+	double delay = 200;
+	while(true) {
+		pros::delay(delay);
+		old_x_pos = new_x_pos;
+		old_y_pos = new_y_pos;
+		if(using_gps == true) {
+			// Not sure if gps output is in meters or millimeters, I'll have to do testing once we start building
+			chassis_controller -> setState({gps.get_status().x*okapi::millimeter,gps.get_status().y*okapi::millimeter,gps.get_status().yaw*okapi::degree});
+			new_x_pos = chassis_controller -> getState().x.convert(okapi::inch);
+			new_y_pos = chassis_controller -> getState().y.convert(okapi::inch);
+		} else {
+			new_x_pos = chassis_controller -> getState().x.convert(okapi::inch);
+			new_y_pos = chassis_controller -> getState().y.convert(okapi::inch);
+		}
+		global_x_vel = (new_x_pos-old_x_pos)/(delay/1000.);
+		global_y_vel = (new_y_pos-old_y_pos)/(delay/1000.);
+	}
+}
+
+double angle_to_goal(double x_pos, double y_pos, double target_x, double target_y) {
+  // Calculates the angle from the robot to the goal in radians
+  double theta = atan2(target_y - y_pos, target_x - x_pos);
+  return theta;
 }
 
 double ideal_velocity(double x_pos, double y_pos, double target_x, double target_y, double target_height) {
@@ -46,13 +55,30 @@ double ideal_velocity(double x_pos, double y_pos, double target_x, double target
   return launch_vel;
 }
 
-double angle_to_goal(double x_pos, double y_pos, double target_x, double target_y) {
-  // Calculates the angle from the robot to the goal in radians
-  double theta = atan2(target_y - y_pos, target_x - x_pos);
-  return theta;
+double trajectory_error(double x_pos, double y_pos, double x_vel, double y_vel, double theta, double launch_vel) {
+  // Calculates the distance in a given trajectory from the ideal end point
+  //
+  //       [|v_0|cos(phi)cos(theta)]
+  // v_0 = [|v_0|cos(phi)sin(theta)]
+  //       [     |v_0|sin(phi)     ]
+  //
+  // h_t = h_launcher + |v_0|sin(phi)t + g/2*t^2
+  // 0 = (h_launcher - h_goal) + |v_0|sin(phi)t + g/2*t^2
+  // Then use the quadratic formula...
+  double discriminant = pow((launch_vel*sin(launch_angle)),2) - 4*(launch_height - goal_height)*(g/2);
+  if(discriminant < 0) { // Complex root -> doesn't reach height
+    std::cout << "Trajectory with theta " << theta << " and launch velocity" << launch_vel << " in/s will never reach target height." << std::endl;
+    return 9001;
+  }
+  double t = (-launch_vel*sin(launch_angle) - sqrt(discriminant))/g;
+  double x_end_pos = (x_pos + offset*cos(theta + alpha)) + t*launch_vel*cos(launch_angle)*cos(theta) + t*x_vel;
+  double y_end_pos = (y_pos + offset*sin(theta + alpha)) + t*launch_vel*cos(launch_angle)*sin(theta) + t*y_vel;
+  double error = sqrt(pow(goal_x-x_end_pos,2) + pow(goal_y-y_end_pos,2));
+  return error;
 }
 
 double rotational_distance(double target, double current) {
+  // Calculates the shortest (directional) distance between two angles
   double T;
   double C;
   double absolute_minimum;
@@ -131,7 +157,8 @@ void auto_aim() {
         }
       }
       // Converts the output theta into a value that prevents overrotation and only cares about equivalent angle, not absolute angle
-      rotation_output = unnormalized_rotation_to(launch_theta/(2.*PI)*360. - inertial.get_yaw(), double (turret_controller -> getTarget()));
+      // Launch theta negated to convert to clockwise equivalent for compatibility with okapi odometry
+      rotation_output = unnormalized_rotation_to(-launch_theta/(2.*PI)*360. - inertial.get_yaw(), double (turret_controller -> getTarget()));
 
       std::cout << "Targeting Complete" << std::endl;
       std::cout << "Trajectory Theta: " << launch_theta << std::endl;
