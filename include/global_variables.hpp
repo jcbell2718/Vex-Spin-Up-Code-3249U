@@ -1,4 +1,5 @@
 #pragma once
+#include "okapi/api/units/QSpeed.hpp"
 #ifndef _GLOBAL_VARIABLES_HPP_
 #define  _GLOBAL_VARIABLES_HPP_
 
@@ -17,6 +18,7 @@ extern double const low_goal_y;
 extern double const g;
 extern double global_x_vel;
 extern double global_y_vel;
+extern double chassis_max_vel;
 extern bool auto_aim_enabled;
 extern bool aiming_for_low_goal;
 extern bool using_gps;
@@ -61,6 +63,5 @@ extern okapi::ControllerButton master_X;
 extern okapi::ControllerButton master_Y;
 extern okapi::ControllerButton master_left;
 extern okapi::ControllerButton master_right;
-
 
 #endif  //  _GLOBAL_VARIABLES_HPP_

@@ -15,7 +15,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#pragma once
+
 #ifndef _PROS_API_H_
 #define _PROS_API_H_
 
@@ -28,7 +28,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <string>
 #else /* (not) __cplusplus */
 #include <errno.h>
 #include <math.h>
@@ -41,16 +40,14 @@
 #endif /* __cplusplus */
 
 #define PROS_VERSION_MAJOR 3
-#define PROS_VERSION_MINOR 6
-#define PROS_VERSION_PATCH 2
-#define PROS_VERSION_STRING "3.6.2"
-
-#define PROS_ERR (INT32_MAX)
-#define PROS_ERR_F (INFINITY)
+#define PROS_VERSION_MINOR 7
+#define PROS_VERSION_PATCH 1
+#define PROS_VERSION_STRING "3.7.1"
 
 #include "pros/adi.h"
 #include "pros/colors.h"
 #include "pros/distance.h"
+#include "pros/error.h"
 #include "pros/ext_adi.h"
 #include "pros/gps.h"
 #include "pros/imu.h"
@@ -78,14 +75,6 @@
 #include "pros/screen.hpp"
 #include "pros/vision.hpp"
 #include "pros/link.hpp"
-#include "okapi/api/units/QTime.hpp"
-#include "okapi/api/util/timeUtil.hpp"
-#include "okapi/impl/device/button/adiButton.hpp"
-#include "okapi/impl/device/button/controllerButton.hpp"
-#include "okapi/impl/device/controllerUtil.hpp"
-#include "okapi/impl/device/motor/motorGroup.hpp"
-#include "pros/adi.hpp"
-#include "pros/optical.hpp"
 #endif
 
 #endif  // _PROS_API_H_

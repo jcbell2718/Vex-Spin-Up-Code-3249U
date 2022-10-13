@@ -69,6 +69,7 @@
 #include "aiming_functions.hpp"
 #include "auton_functions.hpp"
 #include "global_variables.hpp"
+#include "intake.hpp"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

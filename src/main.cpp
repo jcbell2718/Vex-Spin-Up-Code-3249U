@@ -1,4 +1,5 @@
 #include "main.h"
+#include "okapi/api/chassis/controller/chassisController.hpp"
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -6,16 +7,19 @@
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {}
+void initialize() {
+	// Initializes tasks
+	pros::Task velocity_recording(velocity_recording_fn);
+	pros::Task auto_aiming(auto_aim);
+	pros::Task intake_control(intake_regulation_function);
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {
-	auto_aim_enabled = false; // Terminates aiming program
-}
+void disabled() {}
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -26,12 +30,7 @@ void disabled() {
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-
 void competition_initialize() {
-	// Initializes tasks
-	pros::Task velocity_recording(velocity_recording_fn);
-	pros::Task auto_aiming(auto_aim);
-
 	// Auton selection menu through the controller
 	bool auton_selected = false;
 	master.setText(0, 0, "Selecting Auton:");
@@ -64,7 +63,10 @@ void competition_initialize() {
 	master.setText(0, 0, "Selected Auton:");
 	master.setText(1, 0, auton.c_str());
 	if(auton == "Auton 1") {
-		// Paths Here
+		chassis_controller -> setState({1_ft, 9_ft, 0_deg});
+		turret_controller -> tarePosition();
+		inertial.tare();
+		pros::delay(5000);
 	} else if(auton == "Auton 2") {
 		// Paths Here
 	}
@@ -84,7 +86,16 @@ void competition_initialize() {
  */
 void autonomous() {
 	if(auton == "Auton 1") {
-		// Auton Code
+		auto_aim_enabled = true;
+		drive_to(1.5_ft, 9.5_ft, 45_deg);
+		chassis_model -> setMaxVelocity(chassis_max_vel/3.);
+		drive_to(9.5_ft, 1.5_ft, 45_deg);
+		chassis_model -> setMaxVelocity(chassis_max_vel);
+		drive_to(9_ft, 1_ft, -45_deg);
+		chassis_model -> setMaxVelocity(chassis_max_vel/3.);
+		drive_to(2_ft, 8_ft, -45_deg);
+		chassis_model -> setMaxVelocity(chassis_max_vel);
+		drive_to(2_ft, 8_ft, 0_deg);
 	} else if(auton == "Auton 2") {
 		// Auton Code
 	}
@@ -170,18 +181,7 @@ void opcontrol() {
 			else if(partner_R2.changedToPressed()) flywheel_controller -> setTarget((flywheel_controller -> getTarget()) - 50);
 		}
 
-		// Indexer
-		if((auto_aim_enabled && disk_switch.changedToPressed()) || (!auto_aim_enabled && partner_L2.changedToPressed())) {
-			indexing = true;
-			indexer.set_value(true);
-			intake_timer.placeMark();
-		}
-		if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 300) indexing = false;
-		else if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 150) indexer.set_value(false);
-
-		// Intake
-		if(indexing) intake_mtr.moveVoltage(0);
-		else intake_mtr.moveVoltage(12000);
+		// Intake PTO
 		if(partner_A.changedToPressed()) intake_PTO.set_value(true);
 		else if(partner_A.changedToReleased()) intake_PTO.set_value(false);
 

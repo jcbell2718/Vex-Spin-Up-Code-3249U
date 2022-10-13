@@ -46,6 +46,7 @@ std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller 
 	.withLimits({3.66, 3, 1000})
 	.withLogger(okapi::Logger::getDefaultLogger())
 	.buildMotionProfileController();
+double chassis_max_vel = chassis_model -> getMaxVelocity();
 
 // Controller for launcher rotation
 okapi::Motor turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::degrees);
