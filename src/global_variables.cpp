@@ -1,3 +1,4 @@
+#include "global_variables.hpp"
 #include "main.h"
 
 // Constants
@@ -17,38 +18,27 @@ double const g = -32.17*12;
 // Global Variables
 double global_x_vel;
 double global_y_vel;
+bool intake_enabled = false;
 bool auto_aim_enabled = false;
 bool aiming_for_low_goal = false;
 bool using_gps = false;
 bool indexing = false;
 int auton_index = 1;
-std::string auton_list[4] = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep"};
+std::vector<std::string> auton_list = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep","Flywheel Test"};
 std::string auton = auton_list[auton_index];
 
 // Chassis
-okapi::Motor front_left_mtr(FRONT_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor front_right_mtr(FRONT_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor back_left_mtr(BACK_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor back_right_mtr(BACK_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::ADIEncoder center_encoder(CENTER_ENCODER_PORT_TOP, CENTER_ENCODER_PORT_BOTTOM, false);
-okapi::ADIEncoder left_encoder(LEFT_ENCODER_PORT_TOP, LEFT_ENCODER_PORT_BOTTOM, false);
-okapi::ADIEncoder right_encoder(RIGHT_ENCODER_PORT_TOP, RIGHT_ENCODER_PORT_BOTTOM, false);
-std::shared_ptr<okapi::OdomChassisController> chassis_controller = okapi::ChassisControllerBuilder()
-	.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
-	.withSensors(left_encoder, right_encoder, center_encoder)
-	// Red gearset, 36/84 gear ratio, 3.25 inch diameter wheels, 16.4 inch wheel track
-	.withDimensions({okapi::AbstractMotor::gearset::red, (36./84.)}, {{3.25_in, 16.4_in}, okapi::imev5RedTPR})
-	// 2.75 in tracking wheel diameter, 7 inch wheel track, 1 inch middle encoder distance
-	.withOdometry({{2.75_in, 7_in, 1_in, 2.75_in}, okapi::quadEncoderTPR})
-	.buildOdometry();
-std::shared_ptr<okapi::XDriveModel> chassis_model = std::dynamic_pointer_cast<okapi::XDriveModel>(chassis_controller -> getModel());
-std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller = okapi::AsyncMotionProfileControllerBuilder()
-	.withOutput(chassis_controller)
-	// Max speed 3.66 m/s, max acceleration 3 m/s^2, max jerk 1000 m/s^3
-	.withLimits({3.66, 3, 1000})
-	.withLogger(okapi::Logger::getDefaultLogger())
-	.buildMotionProfileController();
-double chassis_max_vel = chassis_model -> getMaxVelocity();
+okapi::Motor front_left_mtr(FRONT_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor front_right_mtr(FRONT_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor back_left_mtr(BACK_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor back_right_mtr(BACK_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::ADIEncoder center_encoder(CENTER_ENCODER_PORTS, false);
+okapi::ADIEncoder left_encoder(LEFT_ENCODER_PORTS, false);
+okapi::ADIEncoder right_encoder(RIGHT_ENCODER_PORTS, false);
+std::shared_ptr<okapi::OdomChassisController> chassis_controller;
+std::shared_ptr<okapi::XDriveModel> chassis_model;
+std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller;
+double chassis_max_vel;
 
 // Controller for launcher rotation
 okapi::Motor turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::degrees);
@@ -57,6 +47,7 @@ std::shared_ptr<okapi::AsyncPositionController<double, double> > turret_controll
 	.withSensor(okapi::IntegratedEncoder(turret_mtr))
 	.withGearset({okapi::AbstractMotor::gearset::red, (148./32.)})
 	.withLogger(okapi::Logger::getDefaultLogger())
+	.notParentedToCurrentTask()
 	.build();
 
 // Controller for flywheel velocity
@@ -66,9 +57,10 @@ okapi::MotorGroup flywheel_mtrs({flywheel_mtr_1, flywheel_mtr_2});
 std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_controller = okapi::AsyncVelControllerBuilder()
 	.withMotor(flywheel_mtrs)
 	.withSensor(okapi::IntegratedEncoder(flywheel_mtr_1))
-	// Not actually, but equivalent. It's really 1:1 3600 rpm
-	.withGearset({okapi::AbstractMotor::gearset::blue, (1./6.)})
+	// Not actually, but equivalent. It's really 18:30 3600 rpm cartridge
+	.withGearset({okapi::AbstractMotor::gearset::blue, (18./(6.*30.))})
 	.withLogger(okapi::Logger::getDefaultLogger())
+	.notParentedToCurrentTask()
 	.build();
 
 // Intake and Indexer
@@ -80,6 +72,9 @@ pros::ADIDigitalOut intake_PTO(PTO_PORT);
 
 // Rollers
 pros::Optical roller_optical(ROLLER_OPTICAL_PORT);
+
+// Expansion
+pros::ADIDigitalOut expansion(EXPANSION_PORT);
 
 // Other
 pros::Imu inertial = pros::Imu(INERTIAL_PORT);

@@ -7,13 +7,14 @@
 void velocity_recording_fn() {
 	// Records robot velocity globally, although specific values are frozen during computations to avoid strange behavior
 	double new_x_pos = chassis_controller -> getState().x.convert(okapi::inch);
-	double new_y_pos = chassis_controller -> getState().y.convert(okapi::inch);
+	double new_y_pos = -chassis_controller -> getState().y.convert(okapi::inch);
 	double old_x_pos;
 	double old_y_pos;
   okapi::AverageFilter<3> vel_filter;
 	double delay = 20;
   pros::Mutex reset_mutex;
   pros::Mutex vel_mutex;
+  cout_timer.placeMark();
 	while(true) {
 		old_x_pos = new_x_pos;
 		old_y_pos = new_y_pos;
@@ -129,6 +130,7 @@ void auto_aim() {
   pros::Mutex target_mutex;
   pros::Mutex reset_mutex;
   pros::Mutex vel_mutex;
+  cout_timer.getDt();
   while(true) {
     while(auto_aim_enabled == true) {
       reset_mutex.take();
@@ -172,16 +174,19 @@ void auto_aim() {
           if(oscillating == true) r = .5*r + .1;
           // Updates launch parameters using the gradient
           launch_vel = launch_vel - r*(error_dv - error)/.001;
-          launch_theta = launch_theta - r*(error_dt - error)/.0001;
+          launch_theta = launch_theta - r*(error_dt - error)/.001;
           error_0 = error;
           error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel, target_x, target_y);
           error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001, target_x, target_y);
-          error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .0001, launch_vel, target_x, target_y);
+          error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel, target_x, target_y);
           depth++;
         }
         // Outputs failure message if it fails to find acceptable launch parameters
         if(depth == 50 && error > 2 && cout_timer.getDtFromMark().convert(okapi::millisecond) >= 800 && cout_timer.getDt().convert(okapi::millisecond) > 750) {
           std::cout << "Unable to compute trajectory :(" << std::endl;
+          std::cout << error << std::endl;
+          std::cout << launch_vel << std::endl;
+          std::cout << launch_theta << std::endl;
           cout_timer.getDt();
         }
       }

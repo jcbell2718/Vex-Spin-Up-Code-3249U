@@ -49,15 +49,13 @@
 #define ROLLER_OPTICAL_PORT 18
 #define INERTIAL_PORT 19
 #define GPS_PORT 20
-#define CENTER_ENCODER_PORT_TOP 'A'
-#define CENTER_ENCODER_PORT_BOTTOM 'B'
-#define LEFT_ENCODER_PORT_TOP 'C'
-#define LEFT_ENCODER_PORT_BOTTOM 'D'
-#define RIGHT_ENCODER_PORT_TOP 'E'
-#define RIGHT_ENCODER_PORT_BOTTOM 'F'
+#define CENTER_ENCODER_PORTS {17, 'C', 'D'}
+#define LEFT_ENCODER_PORTS {17, 'A', 'B'}
+#define RIGHT_ENCODER_PORTS {17, 'E', 'F'}
 #define LIMIT_SWITCH_PORT 'G'
-#define INDEXER_PORT 'H'
+#define INDEXER_PORT {{17, 'G'}}
 #define PTO_PORT 'H'
+#define EXPANSION_PORT {{17, 'H'}}
 
 
 #include "api.h"

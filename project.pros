@@ -309,7 +309,8 @@
     },
     "upload_options": {
       "icon": "X",
-      "slot": 3
+      "slot": 1,
+      "after": "none"
     }
   }
 }
