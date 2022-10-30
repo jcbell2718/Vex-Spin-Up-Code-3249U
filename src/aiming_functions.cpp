@@ -45,8 +45,8 @@ void velocity_recording_fn() {
 }
 
 double angle_to(double x_pos, double y_pos, double target_x, double target_y) {
-  // Calculates the (counterclockwise) angle between two positions in radians
-  return atan2(target_y - y_pos, target_x - x_pos);
+  // Calculates the (counterclockwise) angle between two positions in degrees
+  return atan2(target_y - y_pos, target_x - x_pos)/(2.*PI)*360.;
 }
 
 double ideal_velocity(double x_pos, double y_pos, double target_x, double target_y, double target_height) {
@@ -64,7 +64,7 @@ double ideal_velocity(double x_pos, double y_pos, double target_x, double target
   // v_0^2 = (g*d^2)/((2*cos(phi)^2)(h_goal - h_launcher - d*tan(phi))
   // v_0 = sqrt((g*d^2)/((2*cos(phi)^2)(h_goal - h_launcher - d*tan(phi)))
   double dist = sqrt(pow((target_x-x_pos),2) + pow((target_y-y_pos),2));
-  double root = g*pow(dist,2)/((2*pow(cos(launch_angle),2))*(target_height - launch_height - dist*tan(launch_angle)));
+  double root = g*pow(dist,2)/((2*pow(cos(launch_angle*(2*PI)/360.),2))*(target_height - launch_height - dist*tan(launch_angle*(2*PI)/360.)));
   // Complex root -> infinite velocity+ to hit target (without considering bot movement - still maybe possible)
   if(root <= 0) return 320;
   double launch_vel = sqrt(root);
@@ -81,17 +81,17 @@ double trajectory_error(double x_pos, double y_pos, double x_vel, double y_vel, 
   // h_t = h_launcher + |v_0|sin(phi)t + g/2*t^2
   // 0 = (h_launcher - h_goal) + |v_0|sin(phi)t + g/2*t^2
   // Then use the quadratic formula...
-  double discriminant = pow((launch_vel*sin(launch_angle)),2) - 4*(launch_height - goal_height)*(g/2);
+  double discriminant = pow((launch_vel*sin(launch_angle*(2*PI)/360.)),2) - 4*(launch_height - goal_height)*(g/2);
   if(discriminant < 0) return 9001; // Complex root -> doesn't reach target height
-  double t = (-launch_vel*sin(launch_angle) - sqrt(discriminant))/g;
-  double x_end_pos = (x_pos + offset*cos(theta + alpha)) + t*launch_vel*cos(launch_angle)*cos(theta) + t*x_vel;
-  double y_end_pos = (y_pos + offset*sin(theta + alpha)) + t*launch_vel*cos(launch_angle)*sin(theta) + t*y_vel;
+  double t = (-launch_vel*sin(launch_angle*(2*PI)/360.) - sqrt(discriminant))/g;
+  double x_end_pos = (x_pos + offset*cos((theta + alpha)*(2*PI)/360.)) + t*launch_vel*cos(launch_angle*(2*PI)/360.)*cos(theta*(2*PI)/360.) + t*x_vel;
+  double y_end_pos = (y_pos + offset*sin((theta + alpha)*(2*PI)/360.)) + t*launch_vel*cos(launch_angle*(2*PI)/360.)*sin(theta*(2*PI)/360.) + t*y_vel;
   double error = sqrt(pow(target_x-x_end_pos,2) + pow(target_y-y_end_pos,2));
   return error;
 }
 
 double rotational_distance(double target, double current) {
-  // Calculates the shortest (directional) distance between two angles
+  // Calculates the shortest (directional) distance between two angles in degrees
   double T;
   double C;
   double absolute_minimum;
@@ -104,7 +104,7 @@ double rotational_distance(double target, double current) {
 }
 
 double unnormalized_rotation_to(double target, double current) {
-  // Calculates the un-normalized angle the shortest distance away from the normalized target
+  // Calculates the un-normalized angle the shortest distance away from the normalized target in degrees
   // i.e. 360 to 20 = 380 rather than 20
   return current + rotational_distance(target, current);
 }
@@ -164,7 +164,7 @@ void auto_aim() {
         // Calculate initial error outside loop to remove need to store past launch parameters
         error = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel, target_x, target_y);
         error_dv = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta, launch_vel + .001, target_x, target_y);
-        error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .0001, launch_vel, target_x, target_y);
+        error_dt = trajectory_error(x_pos, y_pos, x_vel, y_vel, launch_theta + .001, launch_vel, target_x, target_y);
         error_0 = error;
         // Gradient descent loop - exits if it gets stuck at depth 50
         while(error > 2 && depth < 50) {
@@ -192,19 +192,19 @@ void auto_aim() {
       }
       // Converts the output theta into a value that prevents overrotation and only cares about equivalent angle, not absolute angle
       // Launch theta negated to convert to clockwise equivalent for compatibility with okapi odometry
-      rotation_output = unnormalized_rotation_to(-launch_theta/(2.*PI)*360. - inertial.get_yaw(), double (turret_controller -> getTarget()));
+      rotation_output = unnormalized_rotation_to(-launch_theta - inertial.get_yaw(), double (turret_controller -> getTarget()));
 
       // Repeated cout, coordinated with odometry output
       if(cout_timer.getDtFromMark().convert(okapi::millisecond) >= 800 && cout_timer.getDt().convert(okapi::millisecond) > 750) {
         std::cout << "Trajectory Theta: " << launch_theta << std::endl;
         std::cout << "Trajectory Velocity: " << launch_vel << std::endl;
-        std::cout << "Trajectory RPM: " << launch_vel/(3.*PI)*2. << std::endl;
+        std::cout << "Trajectory RPM: " << launch_vel*2.*60./(3.*PI) << std::endl;
         std::cout << "Turret Rotation: " << rotation_output << std::endl;
         cout_timer.getDt();
       }
 
       turret_controller -> setTarget(rotation_output); 
-      flywheel_controller -> setTarget((launch_vel*2.*60.)/(3.*PI)); // ((in/sec)*(sec/min)*2(edge speed/resulting speed))*(rot/in)
+      flywheel_controller -> setTarget(launch_vel*2.*60./(3.*PI)); // ((in/sec)*(sec/min)*2(edge speed/resulting speed))*(rot/in)
       pros::delay(10);
     }
     pros::delay(500);

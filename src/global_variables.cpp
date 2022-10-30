@@ -23,15 +23,16 @@ bool auto_aim_enabled = false;
 bool aiming_for_low_goal = false;
 bool using_gps = false;
 bool indexing = false;
+std::string alliance_color = "blue";
 int auton_index = 1;
-std::vector<std::string> auton_list = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep","Flywheel Test"};
+std::vector<std::string> auton_list = {"None              ", "PD Tuning              ", "Odometry Tuning              ", "Roller Start Double Sweep              ","Shimmy-Shake               "};
 std::string auton = auton_list[auton_index];
 
 // Chassis
-okapi::Motor front_left_mtr(FRONT_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor front_right_mtr(FRONT_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor back_left_mtr(BACK_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Motor back_right_mtr(BACK_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor front_left_mtr(FRONT_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor front_right_mtr(FRONT_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor back_left_mtr(BACK_LEFT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor back_right_mtr(BACK_RIGHT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::ADIEncoder center_encoder(CENTER_ENCODER_PORTS, false);
 okapi::ADIEncoder left_encoder(LEFT_ENCODER_PORTS, false);
 okapi::ADIEncoder right_encoder(RIGHT_ENCODER_PORTS, false);
@@ -41,27 +42,14 @@ std::shared_ptr<okapi::AsyncMotionProfileController> chassis_profile_controller;
 double chassis_max_vel;
 
 // Controller for launcher rotation
-okapi::Motor turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::degrees);
-std::shared_ptr<okapi::AsyncPositionController<double, double> > turret_controller = okapi::AsyncPosControllerBuilder()
-	.withMotor(turret_mtr)
-	.withSensor(okapi::IntegratedEncoder(turret_mtr))
-	.withGearset({okapi::AbstractMotor::gearset::red, (148./32.)})
-	.withLogger(okapi::Logger::getDefaultLogger())
-	.notParentedToCurrentTask()
-	.build();
+okapi::Motor turret_mtr(TURRET_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::degrees);
+std::shared_ptr<okapi::AsyncPositionController<double, double> > turret_controller;
 
 // Controller for flywheel velocity
 okapi::Motor flywheel_mtr_1(FLYWHEEL_MOTOR_PORT_1, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::Motor flywheel_mtr_2(FLYWHEEL_MOTOR_PORT_2, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
 okapi::MotorGroup flywheel_mtrs({flywheel_mtr_1, flywheel_mtr_2});
-std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_controller = okapi::AsyncVelControllerBuilder()
-	.withMotor(flywheel_mtrs)
-	.withSensor(okapi::IntegratedEncoder(flywheel_mtr_1))
-	// Not actually, but equivalent. It's really 18:30 3600 rpm cartridge
-	.withGearset({okapi::AbstractMotor::gearset::blue, (18./(6.*30.))})
-	.withLogger(okapi::Logger::getDefaultLogger())
-	.notParentedToCurrentTask()
-	.build();
+std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_controller;
 
 // Intake and Indexer
 okapi::Motor intake_mtr(INTAKE_MOTOR_PORT, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
@@ -83,7 +71,7 @@ okapi::Timer cout_timer;
 
 // Controllers
 okapi::Controller master(okapi::ControllerId::master);
-okapi::Controller partner(okapi::ControllerId::master);
+okapi::Controller partner(okapi::ControllerId::partner);
 okapi::ControllerButton partner_R1(okapi::ControllerId::partner, okapi::ControllerDigital::R1);
 okapi::ControllerButton partner_R2(okapi::ControllerId::partner, okapi::ControllerDigital::R2);
 okapi::ControllerButton partner_L1(okapi::ControllerId::partner, okapi::ControllerDigital::L1);
