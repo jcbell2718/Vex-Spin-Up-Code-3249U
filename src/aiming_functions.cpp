@@ -143,13 +143,14 @@ void auto_aim() {
       target_mutex.give();
       if(aiming_for_low_goal) {
         // Assumes ideal values are true when aiming for the low goal, since accuracy is less important
-        launch_theta = angle_to(x_pos, y_pos, target_x, target_y);
-        launch_vel = ideal_velocity(x_pos, y_pos, target_x, target_y, 0);
+        // "Target" positions are high goal positions, so low goal targets are reversed
+        launch_theta = angle_to(x_pos, y_pos, 144 - target_x, 144 - target_y);
+        launch_vel = ideal_velocity(x_pos, y_pos, 144 - target_x, 144 - target_y, 0);
       } else {
         // Determines best launch parameters for high goal using gradient descent
         // Uses inaccurate estimation as starting point
-        launch_theta = angle_to(x_pos, y_pos, goal_x, goal_y);
-        launch_vel = ideal_velocity(x_pos, y_pos, goal_x, goal_y, goal_height);
+        launch_theta = angle_to(x_pos, y_pos, target_x, target_y);
+        launch_vel = ideal_velocity(x_pos, y_pos, target_x, target_y, goal_height);
         // Lock in robot velocity
         vel_mutex.take();
         x_vel = global_x_vel;

@@ -2,7 +2,7 @@
 #include "main.h"
 #include "pros/misc.h"
 
-void intake_regulation_function(void) {
+void intake_regulation_function() {
     // Regulates the intake, indexer , and roller mechaanism during both autonomous and driver control periods
     while(true) {
         if(intake_enabled) {

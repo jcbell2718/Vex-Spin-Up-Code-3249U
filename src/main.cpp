@@ -1,6 +1,7 @@
 #include "main.h"
 #include "global_variables.hpp"
 #include "okapi/api/chassis/controller/chassisController.hpp"
+#include "pros/misc.h"
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -49,76 +50,115 @@ void initialize() {
 		.withLogger(okapi::Logger::getDefaultLogger())
 		.notParentedToCurrentTask()
 		.build();
+	
+	bool selection_made ;
+	std::string auton_text;
+	std::string color_text;
 
-	// Auton selection menu through the controller
-	bool selection_made = false;
-	master.setText(0, 0, "Selecting Auton:   ");
-	pros::delay(120);
-	master.setText(1, 0, auton.c_str());
-	pros::delay(120);
-	while(selection_made == false) {
-		if(master_A.changedToPressed()) {
-			// Submit choice
-			selection_made = true;
-		} else if(master_left.changedToPressed()) {
-			// Cycle through choices backwards
-			auton_index--;
-			if(auton_index < 0) auton_index = auton_list.size() - 1;
-			auton = auton_list[auton_index];
-			master.setText(1, 0, auton.c_str());
-			pros::delay(120);
-		} else if(master_right.changedToPressed()) {
-			// Cycle through choices forwards
-			auton_index++;
-			if(auton_index == auton_list.size()) auton_index = 0;
-			auton = auton_list[auton_index];
-			master.setText(1, 0, auton.c_str());
-			pros::delay(120);
-		}
-		pros::delay(20);
-	}
-	master.setText(0, 0, "Selected Auton:    ");
-	chassis_model -> resetSensors();
-	turret_controller -> tarePosition();
-	inertial.tare();
-	pros::delay(120);
-	if(auton == "PD Tuning") {
-		chassis_controller -> setState({0_ft, 0_ft, 0_deg});
-	} else if(auton == "Odometry Tuning") {
-		chassis_controller -> setState({0_ft, 0_ft, 0_deg});
-	} else if(auton == "Roller Start Double Sweep") {
-		chassis_controller -> setState({1_ft, -9_ft, 0_deg});
-	}
-
-	// Alliance selection menu through the controller
-	selection_made = false;
-	master.setText(0, 0, "Selecting Alliance:   ");
-	pros::delay(120);
-	master.setText(1, 0, alliance_color);
-	pros::delay(120);
-	while(selection_made == false) {
-		if(master_A.changedToPressed()) {
-			// Submit choice
-			selection_made = true;
-		} else if(master_left.changedToPressed() || master_right.changedToPressed()) {
-			// Cycle through choices backwards
-			if(alliance_color == "red") alliance_color = "blue";
-			else alliance_color = "red";
-			master.setText(1, 0, alliance_color);
-			pros::delay(120);
-		} 
-		pros::delay(20);
-	}
-
-	// Initializes tasks
+	// Initialize tasks
 	pros::Task velocity_recording(velocity_recording_fn);
 	pros::Task auto_aiming(auto_aim);
 	pros::Task intake_control(intake_regulation_function);
 
-	master.setText(0, 0, auton.c_str());
-	pros::delay(120);
-	master.setText(2, 0, " -Setup Loaded-    ");
-	pros::delay(2000);
+	// Setup selection is in loop so autons can be run repeatedly without turning off the program
+	// DON'T TURN ON THE ROBOT PLUGGED INTO FIELD CONTROL IMMEDIATELY
+	while(!pros::competition::is_connected()) {
+		// Disables auto-aim and the intake so they dont run during setup selection
+		auto_aim_enabled = false;
+		intake_enabled = false;
+
+		// Auton selection menu through the controller
+		selection_made = false;
+		auton_text = auton + "          ";
+		master.setText(0, 0, "Selecting Auton:   ");
+		pros::delay(120);
+		master.setText(1, 0, auton.c_str());
+		pros::delay(120);
+		while(selection_made == false) {
+			if(master_A.changedToPressed()) {
+				// Submit choice
+				selection_made = true;
+			} else if(master_left.changedToPressed()) {
+				// Cycle through choices backwards
+				auton_index--;
+				if(auton_index < 0) auton_index = auton_list.size() - 1;
+				auton = auton_list[auton_index];
+				auton_text = auton + "          ";
+				master.setText(1, 0, auton_text);
+				pros::delay(120);
+			} else if(master_right.changedToPressed()) {
+				// Cycle through choices forwards
+				auton_index++;
+				if(auton_index == auton_list.size()) auton_index = 0;
+				auton = auton_list[auton_index];
+				auton_text = auton + "          ";
+				master.setText(1, 0, auton_text);
+				pros::delay(120);
+			}
+			pros::delay(20);
+		}
+
+		// Alliance selection menu through the controller
+		selection_made = false;
+		color_text = alliance_color + "          ";
+		master.setText(0, 0, "Selecting Alliance:   ");
+		pros::delay(120);
+		master.setText(1, 0, color_text);
+		pros::delay(120);
+		while(selection_made == false) {
+			if(master_A.changedToPressed()) {
+				// Submit choice
+				selection_made = true;
+			} else if(master_left.changedToPressed() || master_right.changedToPressed()) {
+				// Cycle through choices
+				if(alliance_color == "red") alliance_color = "blue";
+				else alliance_color = "red";
+				color_text = alliance_color + "          ";
+				master.setText(1, 0, color_text);
+				pros::delay(120);
+			} 
+			pros::delay(20);
+		}
+
+		// Initialize setup dependent on auton choice
+		chassis_model -> resetSensors();
+		turret_controller -> tarePosition();
+		inertial.tare();
+		pros::delay(120);
+		if(auton == "PD Tuning") {
+			chassis_controller -> setState({0_ft, 0_ft, 0_deg});
+		} else if(auton == "Odometry Tuning") {
+			chassis_controller -> setState({0_ft, 0_ft, 0_deg});
+		} else if(auton == "Roller Start Double Sweep") {
+			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
+		}
+
+		// Initializes tasks
+		pros::Task velocity_recording(velocity_recording_fn);
+		pros::Task auto_aiming(auto_aim);
+		pros::Task intake_control(intake_regulation_function);
+
+		// Displays final configuration
+		master.setText(0, 0, auton_text);
+		pros::delay(120);
+		master.setText(2, 0, "  -Setup Loaded-  ");
+		pros::delay(120);
+
+		// Auton or opcontrol can be enabled without competition switch
+		// Also holds to prevent automatic opcontrol when wanting to plug into field control
+		while(!pros::competition::is_connected()) {
+			if(master_Y.changedToPressed()) {
+				autonomous();
+				break;
+			} else if(master_A.changedToPressed()) {
+				opcontrol();
+				break;
+			} else if(master_B.changedToPressed()) {
+				break;
+			}
+			pros::delay(20);
+		}
+	}
 }
 
 /**
@@ -134,12 +174,12 @@ void initialize() {
  */
 void autonomous() {
 	pros::Mutex target_mutex;
-	if(auton == "PD Tuning              ") {
+	if(auton == "PD Tuning") {
 		// PD controller tuning
 		auto_aim_enabled = false;
 		intake_enabled = false;
 		drive_to(0_ft, 0_ft, 90_deg);
-	} else if(auton == "Odometry Tuning              ") {
+	} else if(auton == "Odometry Tuning") {
 		// Square test to calibrate odometry
 		auto_aim_enabled = false;
 		intake_enabled = false;
@@ -149,7 +189,7 @@ void autonomous() {
 			chassis_controller -> driveToPoint({0_ft, -4_ft});
 			chassis_controller -> driveToPoint({0_ft, 0_ft});
 		}
-	} else if(auton == "Roller Start Double Sweep              ") {
+	} else if(auton == "Roller Start Double Sweep") {
 		// Starts at roller side, sweeps along the auton line then back along the line of disks on our side
 		auto_aim_enabled = true;
 		intake_enabled = true;
@@ -162,7 +202,7 @@ void autonomous() {
 		drive_to(2_ft, 8_ft, 135_deg);
 		chassis_model -> setMaxVelocity(chassis_max_vel);
 		drive_to(2_ft, 8_ft, 0_deg);
-	} else if(auton == "Shimmy-Shake              ") {
+	} else if(auton == "Shimmy-Shake") {
 		auto_aim_enabled = false;
 		intake_enabled = true;
 		chassis_model -> xArcade(0, 1, 0);

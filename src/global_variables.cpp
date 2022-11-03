@@ -11,13 +11,15 @@ double const goal_x = 10.5*12;
 double const goal_y = 10.5*12;
 double const opponent_goal_x = 1.5*12;
 double const opponent_goal_y = 1.5*12;
-double global_target_x = 10.5*12;
-double global_target_y = 10.5*12;
+double const alliance_goal_x = 10.5*12;
+double const alliance_goal_y = 10.5*12;
 double const g = -32.17*12;
 
 // Global Variables
 double global_x_vel;
 double global_y_vel;
+double global_target_x = 10.5*12;
+double global_target_y = 10.5*12;
 bool intake_enabled = false;
 bool auto_aim_enabled = false;
 bool aiming_for_low_goal = false;
@@ -25,7 +27,7 @@ bool using_gps = false;
 bool indexing = false;
 std::string alliance_color = "blue";
 int auton_index = 1;
-std::vector<std::string> auton_list = {"None              ", "PD Tuning              ", "Odometry Tuning              ", "Roller Start Double Sweep              ","Shimmy-Shake               "};
+std::vector<std::string> auton_list = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep", "Shimmy-Shake"};
 std::string auton = auton_list[auton_index];
 
 // Chassis
