@@ -3,18 +3,19 @@
 #include "pros/misc.h"
 
 void intake_regulation_function() {
-    // Regulates the intake, indexer , and roller mechaanism during both autonomous and driver control periods
+    // Regulates the intake, indexer, and roller mechanism during both autonomous and driver control periods
+    okapi::Timer intake_timer;
+    intake_timer.placeMark();
+    pros::delay(600);
     while(true) {
         if(intake_enabled) {
-            // if((auto_aim_enabled && disk_switch.changedToPressed()) || (!auto_aim_enabled && partner_up.changedToPressed() && !partner_B.isPressed())) {
-            //     indexing = true;
-            //     intake_timer.placeMark();
-            // }
-            // if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 600) indexing = false;
-            // else if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 300) indexer.set_value(false);
-            // else if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 100) indexer.set_value(true);
-            if(partner_up.isPressed()) indexing = true;
-            else indexing = false;
+            if((auto_aim_enabled && disk_switch.changedToPressed()) || (!auto_aim_enabled && partner_up.changedToPressed() && !partner_B.isPressed())) {
+                indexing = true;
+                intake_timer.placeMark();
+            }
+            if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 600) indexing = false;
+            else if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 300) indexer.set_value(false);
+            else if(intake_timer.getDtFromMark().convert(okapi::millisecond) > 100) indexer.set_value(true);
             if(indexing) intake_mtr.moveVoltage(0);
             else intake_mtr.moveVoltage(12000);
         } else if(partner_up.changedToPressed() && !partner_B.isPressed())  turn_roller(alliance_color);

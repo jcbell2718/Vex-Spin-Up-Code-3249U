@@ -55,7 +55,6 @@ std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_contro
 
 // Intake and Indexer
 okapi::Motor intake_mtr(INTAKE_MOTOR_PORT, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
-okapi::Timer intake_timer;
 okapi::ADIButton disk_switch(LIMIT_SWITCH_PORT);
 pros::ADIDigitalOut indexer(INDEXER_PORT);
 pros::ADIDigitalOut intake_PTO(PTO_PORT);

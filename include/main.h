@@ -65,10 +65,12 @@
  */
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
+#include "pros-grafana-lib/api.h"
 #include "aiming_functions.hpp"
 #include "auton_functions.hpp"
 #include "global_variables.hpp"
 #include "intake.hpp"
+#include "initialization.hpp"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do
@@ -92,7 +94,6 @@ using namespace okapi::literals;
 extern "C" {
 #endif
 void autonomous(void);
-void initialize(void);
 void disabled(void);
 void competition_initialize(void);
 void opcontrol(void);

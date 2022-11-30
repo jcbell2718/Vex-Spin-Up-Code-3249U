@@ -49,7 +49,6 @@ extern okapi::Motor flywheel_mtr_2;
 extern okapi::MotorGroup flywheel_mtrs;
 extern std::shared_ptr<okapi::AsyncVelocityController<double, double> > flywheel_controller;
 extern okapi::Motor intake_mtr;
-extern okapi::Timer intake_timer;
 extern okapi::ADIButton disk_switch;
 extern pros::ADIDigitalOut indexer;
 extern pros::ADIDigitalOut intake_PTO;
