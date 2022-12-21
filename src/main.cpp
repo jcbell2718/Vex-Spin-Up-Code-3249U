@@ -3,7 +3,6 @@
 #include "okapi/api/chassis/controller/chassisController.hpp"
 #include "pros/misc.h"
 
-
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -21,7 +20,10 @@ void autonomous() {
 		// PD controller tuning
 		auto_aim_enabled = false;
 		intake_enabled = false;
-		drive_to(0_ft, 0_ft, 90_deg);
+		while(true) {
+			drive_to(2_ft, 4_ft, 0_deg);
+			drive_to(0_ft, 0_ft, 0_deg);
+		}
 	} else if(auton == "Odometry Tuning") {
 		// Square test to calibrate odometry
 		auto_aim_enabled = false;

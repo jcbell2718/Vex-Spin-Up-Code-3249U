@@ -11,7 +11,7 @@ void drive_to(okapi::QLength x, okapi::QLength y, okapi::QAngle theta) {
     double target_y = -y.convert(okapi::inch); // Convert to inverted okapi y-direction
     double target_theta = -theta.convert(okapi::degree); // Convert to okapi clockwise angles
     // PD parameters (require tuning):
-    double pkP = .01;
+    double pkP = .1;
     double pkD = 0;
     double akP = .01;
     double akD = 0;
@@ -26,9 +26,14 @@ void drive_to(okapi::QLength x, okapi::QLength y, okapi::QAngle theta) {
     double a_error_derivative;
     double x_error_derivative;
     double y_error_derivative;
+    double unadjusted_x_input;
+    double unadjusted_y_input;
+    double x_input;
+    double y_input;
+    double input_scaler;
     double total_error = abs(a_error) + abs(x_error) + abs(y_error);
     std::cout << "[";
-    while(stability_counter < 10) {
+    while(stability_counter < 15) {
         a_error_previous = a_error;
         x_error_previous = x_error;
         y_error_previous = y_error;
@@ -40,9 +45,16 @@ void drive_to(okapi::QLength x, okapi::QLength y, okapi::QAngle theta) {
         x_error_derivative = (x_error - x_error_previous)/(delay/1000.);
         y_error_derivative = (y_error - y_error_previous)/(delay/1000.);
         std::cout << total_error << " "; // Output for PD tuning (formatted for graph in matlab)
-        if(total_error < 1) stability_counter++; // Counter to determine if the robot has settled
+        if(total_error < 5) stability_counter++; // Counter to determine if the robot has settled
         else stability_counter = 0;
-        chassis_model -> fieldOrientedXArcade(pkP*x_error + pkD*x_error_derivative, pkP*y_error + pkD*y_error_derivative, akP*a_error + akD*a_error_derivative, chassis_controller -> getState().theta);
+        // Adjustment to make path straight when not at 45 degrees at higher than max speed in one direction
+        unadjusted_x_input = pkP*x_error + pkD*x_error_derivative;
+        unadjusted_y_input = pkP*y_error + pkD*y_error_derivative;
+        if(unadjusted_x_input > 1 || unadjusted_y_input > 1) input_scaler = std::max(unadjusted_x_input, unadjusted_y_input);
+        else input_scaler = 1;
+        x_input = unadjusted_x_input/input_scaler;
+        y_input = unadjusted_y_input/input_scaler;
+        chassis_model -> fieldOrientedXArcade(x_input, y_input, akP*a_error + akD*a_error_derivative, chassis_controller -> getState().theta);
         pros::delay(delay);
     }
     std::cout << "]" << std::endl;
