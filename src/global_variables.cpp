@@ -27,7 +27,7 @@ bool using_gps = false;
 bool indexing = false;
 std::string alliance_color = "blue";
 int auton_index = 1;
-std::vector<std::string> auton_list = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep", "Shimmy-Shake"};
+std::vector<std::string> auton_list = {"None", "PD Tuning", "Odometry Tuning", "Roller Start Double Sweep", "Shimmy-Shake", "Roller Only"};
 std::string auton = auton_list[auton_index];
 
 // Chassis

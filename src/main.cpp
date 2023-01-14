@@ -55,6 +55,13 @@ void autonomous() {
 		chassis_model -> xArcade(0, -1, 0);
 		pros::delay(1500);
 		chassis_model -> xArcade(0, 0, 0);
+	} else if(auton == "Roller Only") {
+		// Drive backwards and turn the roller
+		auto_aim_enabled = false;
+		intake_enabled = false;
+		drive_to(.75_ft, 0_ft, 0_deg);
+		turn_roller(alliance_color);
+		drive_to(2_ft, 0_ft, 0_deg);
 	}
 }
 

@@ -27,7 +27,7 @@ void initialize() {
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
 		.withSensors(left_encoder, right_encoder, center_encoder)
 		// Green gearset, 36/84 gear ratio, 3.25 inch diameter wheels, 16.4 inch wheel track
-		.withDimensions({okapi::AbstractMotor::gearset::red, (36./84.)}, {{3.25_in, 16.4_in}, okapi::imev5RedTPR})
+		.withDimensions({okapi::AbstractMotor::gearset::red, (36./84.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5RedTPR})
 		// tracking wheel diameter | wheel track | middle encoder distance
 		.withOdometry({{3.25_in, 9.75_in, 1.875_in, 3.25_in}, okapi::quadEncoderTPR})
 		.notParentedToCurrentTask()
@@ -172,6 +172,8 @@ void initialize() {
 			chassis_controller -> setState({0_ft, 0_ft, 0_deg});
 		} else if(auton == "Roller Start Double Sweep") {
 			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
+		} else if(auton == "Roller Only") {
+			chassis_controller -> setState({1_ft, 0_ft, 0_deg});
 		}
 
 		// Displays final configuration
