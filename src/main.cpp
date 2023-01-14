@@ -59,9 +59,9 @@ void autonomous() {
 		// Drive backwards and turn the roller
 		auto_aim_enabled = false;
 		intake_enabled = false;
-		drive_to(.75_ft, 0_ft, 0_deg);
+		drive_to(.75_ft, 9_ft, 0_deg);
 		turn_roller(alliance_color);
-		drive_to(2_ft, 0_ft, 0_deg);
+		drive_to(2_ft, 9_ft, 0_deg);
 	}
 }
 
@@ -111,7 +111,7 @@ void opcontrol() {
 	int y_reset_angle_tilt;
 	pros::Mutex target_mutex;
 	pros::Mutex reset_mutex;
-	auto_aim_enabled = false;
+	auto_aim_enabled = true;
 	intake_enabled = true;
 	while (true) {
 		// Controller LCD Displays

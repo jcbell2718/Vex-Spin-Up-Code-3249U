@@ -173,7 +173,7 @@ void initialize() {
 		} else if(auton == "Roller Start Double Sweep") {
 			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
 		} else if(auton == "Roller Only") {
-			chassis_controller -> setState({1_ft, 0_ft, 0_deg});
+			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
 		}
 
 		// Displays final configuration
