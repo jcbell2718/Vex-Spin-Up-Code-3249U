@@ -46,16 +46,16 @@
 #define FLYWHEEL_MOTOR_PORT_1 6
 #define FLYWHEEL_MOTOR_PORT_2 7
 #define INTAKE_MOTOR_PORT 18
-#define ROLLER_OPTICAL_PORT 17
+#define ROLLER_OPTICAL_PORT 4
 #define INERTIAL_PORT 19
 #define GPS_PORT 20
 #define CENTER_ENCODER_PORTS {17, 'C', 'D'}
 #define LEFT_ENCODER_PORTS {17, 'A', 'B'}
 #define RIGHT_ENCODER_PORTS {17, 'E', 'F'}
 #define LIMIT_SWITCH_PORT 'A'
-#define INDEXER_PORT 'G'
-#define PTO_PORT 'B'
-#define EXPANSION_PORT 'H'
+#define INDEXER_PORT 'H'
+#define PTO_PORT 'G'
+#define EXPANSION_PORT 'B'
 
 
 #include "api.h"
@@ -71,6 +71,7 @@
 #include "global_variables.hpp"
 #include "intake.hpp"
 #include "initialization.hpp"
+#include "pros-grafana-lib/api.h"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

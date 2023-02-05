@@ -35,7 +35,11 @@ void velocity_recording_fn() {
       std::cout << "Y Position: " << new_y_pos << std::endl;
       std::cout << "X Velocity: " << global_x_vel << std::endl;
       std::cout << "Y Velocity: " << global_y_vel << std::endl;
+      std::cout << "Center: " << center_encoder.get() << std::endl;
+      std::cout << "Left: " << left_encoder.get() << std::endl;
+      std::cout << "Right: " << right_encoder.get() << std::endl;
       std::cout << "Theta: " << chassis_controller -> getState().theta.convert(okapi::degree) << std::endl;
+      std::cout << "Hue: " << roller_optical.get_hue() << std::endl;
       std::cout << "--------------------------" << std::endl;
       cout_timer.placeMark();
     }
@@ -184,7 +188,9 @@ void auto_aim() {
         }
         // Outputs failure message if it fails to find acceptable launch parameters
         if(depth == 50 && error > 2 && cout_timer.getDtFromMark().convert(okapi::millisecond) >= 800 && cout_timer.getDt().convert(okapi::millisecond) > 750) {
-          std::cout << "Unable to compute trajectory :(" << std::endl;
+          
+          //std::cout << "Unable to compute trajectory :(" << std::endl;
+
           std::cout << error << std::endl;
           std::cout << launch_vel << std::endl;
           std::cout << launch_theta << std::endl;

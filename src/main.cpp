@@ -20,10 +20,7 @@ void autonomous() {
 		// PD controller tuning
 		auto_aim_enabled = false;
 		intake_enabled = false;
-		while(true) {
-			drive_to(2_ft, 4_ft, 0_deg);
-			drive_to(0_ft, 0_ft, 0_deg);
-		}
+		drive_to(2_ft, 0_ft, 0_deg);
 	} else if(auton == "Odometry Tuning") {
 		// Square test to calibrate odometry
 		auto_aim_enabled = false;
@@ -59,9 +56,24 @@ void autonomous() {
 		// Drive backwards and turn the roller
 		auto_aim_enabled = false;
 		intake_enabled = false;
-		drive_to(.75_ft, 9_ft, 0_deg);
+		intake_PTO.set_value(true);
+		chassis_model -> xArcade(0, -1, 0);
+		pros::delay(200);
+		chassis_model -> xArcade(0, 0, 0);
 		turn_roller(alliance_color);
-		drive_to(2_ft, 9_ft, 0_deg);
+		chassis_model -> xArcade(0, 1, 0);
+		pros::delay(200);
+		chassis_model -> xArcade(0, 0, 0);
+		pros::delay(5000);
+		intake_PTO.set_value(false);
+	} else if(auton == "Blind Shot") {
+		// Drive backwards and turn the roller
+		auto_aim_enabled = true;
+		intake_enabled = true;
+		pros::delay(5000);
+		auton_indexer_trigger = true;
+		pros::delay(300);
+		auton_indexer_trigger = false;
 	}
 }
 
@@ -111,7 +123,8 @@ void opcontrol() {
 	int y_reset_angle_tilt;
 	pros::Mutex target_mutex;
 	pros::Mutex reset_mutex;
-	auto_aim_enabled = true;
+	auto_aim_enabled = false;
+	flywheel_controller -> setTarget(3400);
 	intake_enabled = true;
 	while (true) {
 		// Controller LCD Displays
@@ -184,42 +197,42 @@ void opcontrol() {
 		}
 
 		// Intake PTO for Roller
-		if(partner_A.changedToPressed() && !partner_B.isPressed()) {
+		if(partner_left.changedToPressed()) {
 			intake_PTO.set_value(true);
 			intake_enabled = false;
-		} else if(partner_A.changedToReleased() && !partner_B.isPressed()) {
+		} else if(partner_right.changedToReleased()) {
 			intake_PTO.set_value(false);
 			intake_enabled = true;
 		}
 
 		// Expansion Release
-		if(partner_left.changedToPressed() && !partner_B.isPressed()) expansion.set_value(true);
-		else if(partner_right.changedToPressed() && !partner_B.isPressed()) expansion.set_value(false);
+		if(expansion_timer.millis() >= 95_s &&  partner_down.changedToPressed()) expansion.set_value(true);
+		else if(partner_down.changedToPressed()) expansion.set_value(false);
 
 		// Odometry Reset Control
-		if(partner_B.changedToReleased() && !partner_A.isPressed()) {
+		if(master_B.changedToReleased() && !partner_A.isPressed()) {
 			reset_mutex.take();
-			if(partner_left.isPressed()) {
+			if(master_left.isPressed()) {
 				chassis_controller -> setState({chassis_controller -> getState().x, -(12*12-9)*okapi::inch, chassis_controller -> getState().theta});
 			} else if(partner_right.isPressed()) {
 				chassis_controller -> setState({chassis_controller -> getState().x, -9*okapi::inch, chassis_controller -> getState().theta});
 			}
-			if(partner_up.isPressed()) {
+			if(master_up.isPressed()) {
 				chassis_controller -> setState({(12*12-9)*okapi::inch, chassis_controller -> getState().y, chassis_controller -> getState().theta});
-			} else if(partner_down.isPressed()) {
+			} else if(master_down.isPressed()) {
 				chassis_controller -> setState({9*okapi::inch, chassis_controller -> getState().y, chassis_controller -> getState().theta});
 			}
 			reset_mutex.give();
-		} else if(partner_B.changedToReleased()) {
+		} else if(master_B.changedToReleased()) {
 			reset_mutex.take();
-			if(partner_left.isPressed()) {
+			if(master_left.isPressed()) {
 				y_reset_angle_tilt = 1;
-			} else if(partner_right.isPressed()) {
+			} else if(master_right.isPressed()) {
 				y_reset_angle_tilt = -1;
 			} else {
 				y_reset_angle_tilt = 0;
 			}
-			if(partner_up.isPressed()) {
+			if(master_up.isPressed()) {
 				x_reset_angle_tilt = 1;
 			} else if(partner_down.isPressed()) {
 				x_reset_angle_tilt = -1;

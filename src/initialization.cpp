@@ -8,6 +8,8 @@ double RobotXPosFeet(std::shared_ptr<okapi::OdomChassisController> chassis) {ret
 double RobotYPosFeet(std::shared_ptr<okapi::OdomChassisController> chassis) {return chassis -> getState().y.convert(okapi::foot);}
 double RobotAngleDegrees(std::shared_ptr<okapi::OdomChassisController> chassis) {return chassis -> getState().theta.convert(okapi::degree);}
 double TargetLaunchAngle(std::shared_ptr<okapi::AsyncPositionController<double, double>> turret) {return fmod(-turret -> getTarget() - inertial.get_yaw() + 9000.*360., 360.);}
+// Manager in extended scope
+std::shared_ptr<grafanalib::GUIManager> manager;
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -26,16 +28,16 @@ void initialize() {
 	chassis_controller = okapi::ChassisControllerBuilder()
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
 		.withSensors(left_encoder, right_encoder, center_encoder)
-		// Green gearset, 36/84 gear ratio, 3.25 inch diameter wheels, 16.4 inch wheel track
-		.withDimensions({okapi::AbstractMotor::gearset::red, (36./84.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5RedTPR})
-		// tracking wheel diameter | wheel track | middle encoder distance
-		.withOdometry({{3.25_in, 9.75_in, 1.875_in, 3.25_in}, okapi::quadEncoderTPR})
+		// Gearset | gear ratio | wheel diameter | wheel track (driving) | TPR
+		.withDimensions({okapi::AbstractMotor::gearset::green, (1./1.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5GreenTPR})
+		// Tracking wheel diameter | wheel track (tracking) | middle encoder distance | center tracking wheel diameter
+		.withOdometry({{2.75_in, 13._in + 15._in/16., 5.5_in, 2.75_in}, okapi::quadEncoderTPR})
 		.notParentedToCurrentTask()
 		.buildOdometry();
 	chassis_model = std::dynamic_pointer_cast<okapi::XDriveModel>(chassis_controller -> getModel());
 	chassis_profile_controller = okapi::AsyncMotionProfileControllerBuilder()
 		.withOutput(chassis_controller)
-		// Max speed 3.66 m/s, max acceleration 3 m/s^2, max jerk 1000 m/s^3
+		// Max speed (m/s) | max acceleration (m/s^2) | max jerk (m/s^3)
 		.withLimits({3.66, 3, 1000})
 		.withLogger(okapi::Logger::getDefaultLogger())
 		.notParentedToCurrentTask()
@@ -44,7 +46,8 @@ void initialize() {
 	turret_controller = okapi::AsyncPosControllerBuilder()
 		.withMotor(turret_mtr)
 		.withSensor(okapi::IntegratedEncoder(turret_mtr))
-		.withGearset({okapi::AbstractMotor::gearset::green, (148./36.)})
+		// Gearset | gear ratio
+		.withGearset({okapi::AbstractMotor::gearset::blue, (148./12.)})
 		.withLogger(okapi::Logger::getDefaultLogger())
 		.notParentedToCurrentTask()
 		.build();
@@ -56,9 +59,10 @@ void initialize() {
 		.withLogger(okapi::Logger::getDefaultLogger())
 		.notParentedToCurrentTask()
 		.build();
+	roller_optical.set_led_pwm(100);
 	
 	// Grafana
-	auto manager = std::make_shared<grafanalib::GUIManager>();
+	manager = std::make_shared<grafanalib::GUIManager>();
 	manager->setRefreshRate(150); // Hopefully sufficient for wireless
 
 	grafanalib::Variable<okapi::Motor> front_left_mtr_var("Front Left Motor", front_left_mtr);
@@ -113,9 +117,9 @@ void initialize() {
 		auton_text = auton + "          ";
 		master.setText(0, 0, "Selecting Auton:   ");
 		pros::delay(120);
-		master.setText(1, 0, auton.c_str());
+		master.setText(1, 0, auton_text.c_str());
 		pros::delay(120);
-		while(selection_made == false) {
+		while(!selection_made) {
 			if(master_A.changedToPressed()) {
 				// Submit choice
 				selection_made = true;
@@ -132,7 +136,7 @@ void initialize() {
 				auton_index++;
 				if(auton_index == auton_list.size()) auton_index = 0;
 				auton = auton_list[auton_index];
-				auton_text = auton + "          ";
+				auton_text = auton + "              ";
 				master.setText(1, 0, auton_text);
 				pros::delay(120);
 			}
@@ -141,12 +145,12 @@ void initialize() {
 
 		// Alliance selection menu through the controller
 		selection_made = false;
-		color_text = alliance_color + "          ";
+		color_text = alliance_color + "              ";
 		master.setText(0, 0, "Selecting Alliance:   ");
 		pros::delay(120);
 		master.setText(1, 0, color_text);
 		pros::delay(120);
-		while(selection_made == false) {
+		while(!selection_made) {
 			if(master_A.changedToPressed()) {
 				// Submit choice
 				selection_made = true;
@@ -154,7 +158,7 @@ void initialize() {
 				// Cycle through choices
 				if(alliance_color == "red") alliance_color = "blue";
 				else alliance_color = "red";
-				color_text = alliance_color + "          ";
+				color_text = alliance_color + "              ";
 				master.setText(1, 0, color_text);
 				pros::delay(120);
 			} 
@@ -174,6 +178,8 @@ void initialize() {
 			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
 		} else if(auton == "Roller Only") {
 			chassis_controller -> setState({1_ft, -9_ft, 0_deg});
+		} else if(auton == "Blind Shot") {
+			chassis_controller -> setState({0_ft, 0_ft, 0_deg});
 		}
 
 		// Displays final configuration

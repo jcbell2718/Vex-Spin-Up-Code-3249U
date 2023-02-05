@@ -28,6 +28,7 @@ extern bool auto_aim_enabled;
 extern bool aiming_for_low_goal;
 extern bool using_gps;
 extern bool indexing;
+extern bool auton_indexer_trigger;
 extern std::string alliance_color;
 extern int auton_index;
 extern std::vector<std::string> auton_list;
@@ -81,5 +82,7 @@ extern okapi::ControllerButton master_A;
 extern okapi::ControllerButton master_B;
 extern okapi::ControllerButton master_left;
 extern okapi::ControllerButton master_right;
+extern okapi::ControllerButton master_up;
+extern okapi::ControllerButton master_down;
 
 #endif  //  _GLOBAL_VARIABLES_HPP_
