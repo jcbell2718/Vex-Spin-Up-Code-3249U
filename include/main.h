@@ -66,10 +66,15 @@
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 #include "pros-grafana-lib/api.h"
-#include "aiming_functions.hpp"
-#include "auton_functions.hpp"
-#include "global_variables.hpp"
+#include "chassis.hpp"
+#include "turret.hpp"
 #include "intake.hpp"
+#include "misc.hpp"
+#include "global_variables.hpp"
+#include "auton.hpp"
+#include "grafana_setup.hpp"
+#include "console_output.hpp"
+#include "controller_lcd.hpp"
 #include "initialization.hpp"
 #include "pros-grafana-lib/api.h"
 
@@ -94,7 +99,6 @@ using namespace okapi::literals;
 #ifdef __cplusplus
 extern "C" {
 #endif
-void autonomous(void);
 void disabled(void);
 void competition_initialize(void);
 void opcontrol(void);

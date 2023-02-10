@@ -331,7 +331,7 @@
     "upload_options": {
       "after": "none",
       "icon": "X",
-      "slot": 2
+      "slot": 1
     }
   }
 }

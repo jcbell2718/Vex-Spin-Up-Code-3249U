@@ -4,11 +4,6 @@
 
 #include "main.h"
 
-void initialize(void);
-double RobotXPosFeet(std::shared_ptr<okapi::OdomChassisController>);
-double RobotYPosFeet(std::shared_ptr<okapi::OdomChassisController>);
-double RobotAngleDegrees(std::shared_ptr<okapi::OdomChassisController>);
-double TargetLaunchAngle(std::shared_ptr<okapi::AsyncPositionController<double, double>>);
-extern std::shared_ptr<grafanalib::GUIManager> manager;
+void initialize();
 
 #endif  //  _INITIALIZATION_HPP_

@@ -2,9 +2,29 @@
 #ifndef _INTAKE_HPP_
 #define  _INTAKE_HPP_
 
-#include "main.h"
+#include "api.h"
+#include "okapi/api.hpp"
+#include "turret.hpp"
 
-void intake_regulation_function(void);
-bool turn_roller(std::string);
+class Intake {
+    public:
+        bool intake_mode;
+        bool indexing;
+        std::string alliance_color;
+        okapi::Motor intake_mtr;
+        okapi::ADIButton disk_switch;
+        pros::ADIDigitalOut indexer;
+        pros::ADIDigitalOut PTO;
+        pros::Optical roller_optical;
+
+        Intake();
+        Intake(bool in_initialize);
+        bool turn_roller();
+        void index();
+        void PTO_to_intake();
+        void PTO_to_roller_mech();
+};
+
+void intake_regulation_fn();
 
 #endif  //  _INTAKE_HPP_
