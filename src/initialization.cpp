@@ -12,11 +12,11 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    std::cout << "errrrr";
-    std::cout << "uhhhhhhhhhhhh";
+    std::cout << "did ya get this far?";
     Chassis chassis;
     Turret turret;
     Intake intake;
+    chassis.reset_encoders();
     chassis_pointer = &chassis;
     turret_pointer = &turret;
     intake_pointer = &intake;
@@ -24,7 +24,6 @@ void initialize() {
 	// Grafana
 	set_up_grafana();
 
-    Chassis* chassis_pointer = new Chassis();
 	// Initialize tasks
 	pros::Task auto_aiming(auto_aim);
 	pros::Task intake_control(intake_regulation_fn);

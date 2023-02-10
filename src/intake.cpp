@@ -11,7 +11,9 @@ Intake::Intake() :
     indexer(INDEXER_PORT),
     PTO(PTO_PORT),
     roller_optical(ROLLER_OPTICAL_PORT)
-{}
+{
+    roller_optical.set_led_pwm(100);
+}
 
 bool Intake::turn_roller() {
     // Turns the roller so that the target color is up
