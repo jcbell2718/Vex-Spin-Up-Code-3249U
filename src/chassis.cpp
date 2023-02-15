@@ -1,25 +1,22 @@
 #include "main.h"
-#include "okapi/api/units/QAngle.hpp"
-#include "okapi/api/units/QLength.hpp"
-#include "okapi/api/units/QTime.hpp"
-#include "okapi/impl/util/timer.hpp"
 
 Chassis::Chassis() :
-    x_pos(),
-    y_pos(),
-    x_vel(),
-    y_vel(),
-    angle(),
+    x_pos(0._ft),
+    y_pos(0._ft),
+    x_vel(0._mps),
+    y_vel(0._mps),
+    angle(0._deg),
     using_gps(false),
-    front_left_mtr(FRONT_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations),
-    front_right_mtr(FRONT_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations),
-    back_left_mtr(BACK_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations),
-    back_right_mtr(BACK_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::red, okapi::AbstractMotor::encoderUnits::rotations),
+    front_left_mtr(FRONT_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
+    front_right_mtr(FRONT_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
+    back_left_mtr(BACK_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
+    back_right_mtr(BACK_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     center_encoder(CENTER_ENCODER_PORTS, false),
     left_encoder(LEFT_ENCODER_PORTS, false),
     right_encoder(RIGHT_ENCODER_PORTS, true),
     max_vel()
 {
+    reset_encoders();
     controller = okapi::ChassisControllerBuilder()
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
 		.withSensors(left_encoder, right_encoder, center_encoder)
@@ -29,6 +26,7 @@ Chassis::Chassis() :
 		.withOdometry({{2.75_in, 13._in + 15._in/16., 5.5_in, 2.75_in}, okapi::quadEncoderTPR})
 		.notParentedToCurrentTask()
 		.buildOdometry();
+    controller->setState({x_pos, -y_pos, angle});
 	model = std::dynamic_pointer_cast<okapi::XDriveModel>(controller -> getModel());
 	profile_controller = okapi::AsyncMotionProfileControllerBuilder()
 		.withOutput(controller)
@@ -173,8 +171,10 @@ void velocity_recording_fn() {
 	okapi::QLength old_y_pos;
     okapi::AverageFilter<3> vel_filter;
     okapi::Timer timer;
-    okapi::QTime delay = 20_ms;
+    timer.getDt();
+    okapi::QTime delay;
 	while(true) {
+        pros::delay(20);
 		old_x_pos = new_x_pos;
 		old_y_pos = new_y_pos;
 	    if(chassis.using_gps) chassis.update_position_gps(); else chassis.update_position();
@@ -185,6 +185,5 @@ void velocity_recording_fn() {
 		chassis.x_vel = vel_filter.filter((new_x_pos-old_x_pos).convert(okapi::inch))*okapi::inch/(delay);
 		chassis.y_vel = vel_filter.filter((new_y_pos-old_y_pos).convert(okapi::inch))*okapi::inch/(delay);
         vel_mutex.give();
-        pros::delay(20);
 	}
 }

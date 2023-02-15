@@ -11,18 +11,9 @@ void auton_setup() {
     chassis.reset_encoders();
     turret.turret_controller -> tarePosition();
     inertial.tare();
-    pros::delay(120);
-    if(auton == "PD Tuning") {
-        chassis.controller -> setState({0_ft, 0_ft, 0_deg});
-    } else if(auton == "Odometry Tuning") {
-        chassis.controller -> setState({0_ft, 0_ft, 0_deg});
-    } else if(auton == "Roller Start Double Sweep") {
-        chassis.controller -> setState({1_ft, -9_ft, 0_deg});
-    } else if(auton == "Roller Only") {
-        chassis.controller -> setState({1_ft, -9_ft, 0_deg});
-    } else if(auton == "Blind Shot") {
-        chassis.controller -> setState({0_ft, 0_ft, 0_deg});
-    }
+    if(auton == "Roller Start Double Sweep") chassis.set_position(1_ft, 9_ft, 0_deg);
+    else if(auton == "Roller Only") chassis.set_position(1_ft, 9_ft, 0_deg);
+    else chassis.set_position(0_ft, 0_ft, 0_deg);
 }
 
 /**
@@ -42,6 +33,7 @@ void autonomous() {
     Intake intake = *intake_pointer;
     Turret turret = *turret_pointer;
 	pros::Mutex target_mutex;
+    control_phase = "autonomous";
 	if(auton == "PD Tuning") {
 		// PD controller tuning
 		turret.auto_aim_enabled = false;

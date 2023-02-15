@@ -24,7 +24,7 @@
  * E_CONTROLLER_MASTER is pedantically correct within the PROS styleguide, but
  * not convienent for most student programmers.
  */
-#define PROS_USE_SIMPLE_NAMES
+// #define PROS_USE_SIMPLE_NAMES
 
 /**
  * If defined, C++ literals will be available for use. All literals are in the
@@ -32,12 +32,11 @@
  *
  * For instance, you can do `4_mtr = 50` to set motor 4's target velocity to 50
  */
-#define PROS_USE_LITERALS
+// #define PROS_USE_LITERALS
 
 /**
  * Global defines
  */
-#define PI 3.14159265358979323846
 #define FRONT_LEFT_MOTOR_PORT 9
 #define FRONT_RIGHT_MOTOR_PORT 1
 #define BACK_LEFT_MOTOR_PORT 10
@@ -66,17 +65,17 @@
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 #include "pros-grafana-lib/api.h"
+
 #include "chassis.hpp"
 #include "turret.hpp"
 #include "intake.hpp"
 #include "misc.hpp"
-#include "global_variables.hpp"
 #include "auton.hpp"
 #include "grafana_setup.hpp"
 #include "console_output.hpp"
 #include "controller_lcd.hpp"
+#include "global_variables.hpp"
 #include "initialization.hpp"
-#include "pros-grafana-lib/api.h"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do
@@ -99,8 +98,6 @@ using namespace okapi::literals;
 #ifdef __cplusplus
 extern "C" {
 #endif
-void disabled(void);
-void competition_initialize(void);
 void opcontrol(void);
 #ifdef __cplusplus
 }

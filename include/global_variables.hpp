@@ -1,5 +1,4 @@
 #pragma once
-#include "okapi/api/units/QSpeed.hpp"
 #ifndef _GLOBAL_VARIABLES_HPP_
 #define  _GLOBAL_VARIABLES_HPP_
 
@@ -8,14 +7,17 @@
 extern pros::Mutex reset_mutex;
 extern pros::Mutex target_mutex;
 extern pros::Mutex vel_mutex;
-extern bool using_gps;
+
 extern std::string control_phase;
+
 extern Chassis* chassis_pointer;
 extern Turret* turret_pointer;
 extern Intake* intake_pointer;
+
 extern pros::ADIDigitalOut expansion;
 extern pros::Imu inertial;
 extern pros::Gps gps;
+
 extern okapi::Controller master;
 extern okapi::Controller partner;
 extern okapi::ControllerButton partner_R1;

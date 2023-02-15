@@ -18,7 +18,6 @@ class Intake {
         pros::Optical roller_optical;
 
         Intake();
-        Intake(bool in_initialize);
         bool turn_roller();
         void index();
         void PTO_to_intake();

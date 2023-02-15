@@ -1,5 +1,4 @@
 #include "main.h"
-#include "okapi/api/units/QAngle.hpp"
 
 okapi::QAngle rotational_distance(okapi::QAngle target, okapi::QAngle current) {
     // Calculates the shortest (directional) distance between two angles in degrees
@@ -19,4 +18,3 @@ okapi::QAngle unnormalized_rotation_to(okapi::QAngle target, okapi::QAngle curre
     // i.e. 360 to 20 = 380 rather than 20
     return current + rotational_distance(target, current);
 }
-

@@ -1,31 +1,4 @@
 #include "main.h"
-#include "controller_lcd.hpp"
-#include "global_variables.hpp"
-#include "okapi/api/chassis/controller/chassisController.hpp"
-#include "pros/misc.h"
-#include "turret.hpp"
-
-Chassis chassis;
-Turret turret;
-Intake intake;
-
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {}
-
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -41,28 +14,26 @@ void competition_initialize() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+    while(control_phase != "opcontrol" && !pros::competition::is_connected()) pros::delay(20);
+
     Chassis chassis = *chassis_pointer;
     Intake intake = *intake_pointer;
     Turret turret = *turret_pointer;
     control_phase = "opcontrol";
 	okapi::Timer expansion_timer;
 	expansion_timer.placeMark();
-	double power = 0;
-	double turning = 0;
-	double strafe = 0;
-	double target_angle = 0;
+	double power;
+	double turning;
+	double strafe;
 
 	turret.auto_aim_enabled = false;
 	turret.set_target_RPM(3400.);
 	intake.intake_mode = true;
 	while(true) {
 		// Chassis Control
-		if(abs(master.getAnalog(okapi::ControllerAnalog::leftY)) < .02) power = 0;
-		else power = powf(master.getAnalog(okapi::ControllerAnalog::leftY), 3.);
-		if(abs(master.getAnalog(okapi::ControllerAnalog::leftX)) < .02) strafe = 0;
-		else strafe = powf(master.getAnalog(okapi::ControllerAnalog::leftX), 3.);
-		if(abs(master.getAnalog(okapi::ControllerAnalog::rightX)) < .02) turning = 0;
-		else turning = powf(master.getAnalog(okapi::ControllerAnalog::rightX), 3.);
+        power = powf(master.getAnalog(okapi::ControllerAnalog::leftY), 3.);
+		strafe = powf(master.getAnalog(okapi::ControllerAnalog::leftX), 3.);
+		turning = powf(master.getAnalog(okapi::ControllerAnalog::rightX), 3.);
 		if(master_L1.isPressed()) {
 			chassis.model -> setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
 			chassis.model -> stop();
@@ -84,8 +55,8 @@ void opcontrol() {
 
 		// Manual Aiming
 		if(!turret.auto_aim_enabled) {
-			if(partner_L1.changedToPressed()) turret.set_target_RPM(turret.launch_RPM + 10);
-			else if(partner_L2.changedToPressed()) turret.set_target_RPM(turret.launch_RPM - 10);
+			if(partner_L1.changedToPressed()) turret.set_target_RPM(turret.launch_RPM + 100);
+			else if(partner_L2.changedToPressed()) turret.set_target_RPM(turret.launch_RPM - 100);
 			if(partner_R1.changedToPressed()) turret.set_target_RPM(turret.launch_RPM + 50);
 			else if(partner_R2.changedToPressed()) turret.set_target_RPM(turret.launch_RPM - 50);
 		}

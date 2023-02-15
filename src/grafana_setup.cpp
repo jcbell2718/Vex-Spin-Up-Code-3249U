@@ -1,5 +1,4 @@
 #include "main.h"
-#include "global_variables.hpp"
 
 // Grafana conversion functions:
 double RobotXPosFeet(std::shared_ptr<okapi::OdomChassisController> chassis) {return chassis -> getState().x.convert(okapi::foot);}

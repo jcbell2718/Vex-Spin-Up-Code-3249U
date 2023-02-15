@@ -1,67 +1,29 @@
-#include "global_variables.hpp"
 #include "main.h"
-#include "okapi/api/filter/averageFilter.hpp"
-#include "okapi/api/units/QAngle.hpp"
-#include "okapi/api/units/QLength.hpp"
-#include "okapi/api/units/QSpeed.hpp"
-#include "okapi/api/units/QTime.hpp"
-#include "okapi/api/units/RQuantity.hpp"
-#include "okapi/impl/device/motor/motorGroup.hpp"
-#include "pros/rtos.hpp"
 
 Turret::Turret() : 
     turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::degrees),
     flywheel_mtr_1(FLYWHEEL_MOTOR_PORT_1, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     flywheel_mtr_2(FLYWHEEL_MOTOR_PORT_2, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     flywheel_mtrs({flywheel_mtr_1, flywheel_mtr_2}),
-    launch_height(16.00_in),
-    launch_angle(30.00_deg),
-    offset(5_in),
-    alpha(-20_deg),
-    goal_height(30.00_in),
-    g(1_G),
+    launch_height(16._in),
+    launch_angle(30._deg),
+    offset(5._in),
+    alpha(-20._deg),
+    goal_height(30._in),
+    g(1._G),
     auto_aim_enabled(false),
     aiming_for_low_goal(false),
     opponent_goal_x(1.5_ft),
     opponent_goal_y(1.5_ft),
     alliance_goal_x(10.5_ft),
     alliance_goal_y(10.5_ft),
-    x_pos(),
-    y_pos(),
-    x_vel(),
-    y_vel(),
-    target_x(),
-    target_y(),
-    target_height(),
-    turret_absolute_angle(),
-    launch_velocity(),
-    launch_RPM()
-{}
-
-Turret::Turret(bool in_initialize) : 
-    turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::degrees),
-    flywheel_mtr_1(FLYWHEEL_MOTOR_PORT_1, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
-    flywheel_mtr_2(FLYWHEEL_MOTOR_PORT_2, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
-    flywheel_mtrs({flywheel_mtr_1, flywheel_mtr_2}),
-    launch_height(16.00_in),
-    launch_angle(30.00_deg),
-    offset(5_in),
-    alpha(-20_deg),
-    goal_height(30.00_in),
-    g(1_G),
-    auto_aim_enabled(false),
-    aiming_for_low_goal(false),
-    opponent_goal_x(1.5_ft),
-    opponent_goal_y(1.5_ft),
-    alliance_goal_x(10.5_ft),
-    alliance_goal_y(10.5_ft),
-    x_pos(),
-    y_pos(),
-    x_vel(),
-    y_vel(),
-    target_x(),
-    target_y(),
-    target_height(),
+    x_pos(0._ft),
+    y_pos(0._ft),
+    x_vel(0._mps),
+    y_vel(0._mps),
+    target_x(10.5_ft),
+    target_y(10.5_ft),
+    target_height(30._in),
     turret_absolute_angle(),
     launch_velocity(),
     launch_RPM()
@@ -178,13 +140,13 @@ void Turret::set_target_angle(okapi::QAngle angle) {
 
 void Turret::set_target_velocity(okapi::QSpeed velocity) {
     launch_velocity = velocity;
-    launch_RPM = (launch_velocity*2./(3_in*PI)*1_min).getValue(); // ((in/min)*(edge speed/resulting speed))*(rot/in)*1 minute
+    launch_RPM = (launch_velocity*2./(3_in*okapi::pi)*1_min).getValue(); // ((in/min)*(edge speed/resulting speed))*(rot/in)*1 minute
     flywheel_controller -> setTarget(launch_RPM);
 }
 
 void Turret::set_target_RPM(double rpm) {
     launch_RPM = rpm;
-    launch_velocity = (launch_RPM*3_in*PI)/(2.*1_min);
+    launch_velocity = (launch_RPM*3_in*okapi::pi)/(2.*1_min);
     flywheel_controller -> setTarget(launch_RPM);
 }
 

@@ -1,4 +1,3 @@
-#include "global_variables.hpp"
 #include "main.h"
 
 // Mutexes

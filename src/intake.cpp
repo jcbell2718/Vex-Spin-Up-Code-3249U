@@ -1,11 +1,9 @@
-#include "global_variables.hpp"
 #include "main.h"
-#include "pros/misc.h"
 
 Intake::Intake() :
     intake_mode(false),
     indexing(false),
-    alliance_color(),
+    alliance_color("blue"),
     intake_mtr(INTAKE_MOTOR_PORT, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     disk_switch(LIMIT_SWITCH_PORT),
     indexer(INDEXER_PORT),
@@ -69,7 +67,7 @@ void intake_regulation_fn() {
     while(true) {
         if(intake.intake_mode) {
             if((turret.auto_aim_enabled && intake.disk_switch.changedToPressed()) || (!turret.auto_aim_enabled && partner_up.changedToPressed())) intake.index();
-            else intake.intake_mtr.moveVoltage(12000);
+            intake.intake_mtr.moveVoltage(12000);
         } else if(partner_A.changedToPressed())  intake.turn_roller();
         else intake.intake_mtr.moveVoltage(0);
         pros::delay(20);

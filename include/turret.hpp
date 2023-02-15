@@ -1,9 +1,4 @@
 #pragma once
-#include "okapi/api/units/QAcceleration.hpp"
-#include "okapi/api/units/QAngle.hpp"
-#include "okapi/api/units/QLength.hpp"
-#include "okapi/api/units/QSpeed.hpp"
-#include "okapi/api/units/QTime.hpp"
 #ifndef _TURRET_HPP_
 #define  _TURRET_HPP_
 
@@ -46,10 +41,7 @@ class Turret {
         double launch_RPM;
 
         Turret();
-        Turret(bool in_initialize);
         okapi::QAngle angle_to_target();
-        double rotational_distance(double target, double current);
-        double unnormalized_rotation_to(double target, double current);
         okapi::QSpeed ideal_velocity();
         okapi::QLength trajectory_error(okapi::QAngle theta, okapi::QSpeed launch_vel);
         void target_low_goal();
