@@ -27,6 +27,7 @@ class Chassis {
         double max_vel;
 
         Chassis();
+        void build_models();
         void drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta);
         void drive_to_default_odom(okapi::QLength x, okapi::QLength y);
         void drive_raw(double forward, double strafe, double yaw);

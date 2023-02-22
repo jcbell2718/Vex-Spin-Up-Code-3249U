@@ -10,9 +10,9 @@ extern pros::Mutex vel_mutex;
 
 extern std::string control_phase;
 
-extern Chassis* chassis_pointer;
-extern Turret* turret_pointer;
-extern Intake* intake_pointer;
+extern Chassis chassis;
+extern Turret turret;
+extern Intake intake;
 
 extern pros::ADIDigitalOut expansion;
 extern pros::Imu inertial;

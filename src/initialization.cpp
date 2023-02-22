@@ -7,13 +7,8 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    std::cout << "did ya get this far?";
-    Chassis chassis;
-    Turret turret;
-    Intake intake;
-    chassis_pointer = &chassis;
-    turret_pointer = &turret;
-    intake_pointer = &intake;
+    chassis.build_models();
+    turret.build_models();
 	
 	// Grafana
 	set_up_grafana();
@@ -24,6 +19,8 @@ void initialize() {
     pros::Task velocity_recording(velocity_recording_fn);
     pros::Task console_output(console_output_fn);
     pros::Task controller_lcd(controller_lcd_fn);
+    pros::delay(1000);
+    std::cout << "did ya get this far?";
 }
 
 /**

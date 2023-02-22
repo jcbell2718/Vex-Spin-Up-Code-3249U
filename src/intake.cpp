@@ -1,15 +1,15 @@
 #include "main.h"
 
 Intake::Intake() :
-    intake_mode(false),
-    indexing(false),
-    alliance_color("blue"),
     intake_mtr(INTAKE_MOTOR_PORT, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     disk_switch(LIMIT_SWITCH_PORT),
     indexer(INDEXER_PORT),
     PTO(PTO_PORT),
-    roller_optical(ROLLER_OPTICAL_PORT)
+    roller_optical(ROLLER_OPTICAL_PORT),
+    alliance_color("blue")
 {
+    intake_mode = false;
+    indexing = false;
     roller_optical.set_led_pwm(100);
 }
 
@@ -60,9 +60,6 @@ void Intake::PTO_to_roller_mech() {
 }
 
 void intake_regulation_fn() {
-    Chassis chassis = *chassis_pointer;
-    Intake intake = *intake_pointer;
-    Turret turret = *turret_pointer;
     // Regulates the intake, indexer, and roller mechanism during both autonomous and driver control periods
     while(true) {
         if(intake.intake_mode) {

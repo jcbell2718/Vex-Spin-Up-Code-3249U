@@ -24,10 +24,12 @@ Turret::Turret() :
     target_x(10.5_ft),
     target_y(10.5_ft),
     target_height(30._in),
-    turret_absolute_angle(),
-    launch_velocity(),
-    launch_RPM()
-{
+    turret_absolute_angle(0_deg),
+    launch_velocity(0_mps),
+    launch_RPM(0)
+{}
+
+void Turret::build_models() {
     // Initializes the okapi controllers
     turret_controller = okapi::AsyncPosControllerBuilder()
         .withMotor(turret_mtr)
@@ -151,9 +153,6 @@ void Turret::set_target_RPM(double rpm) {
 }
 
 void auto_aim() {
-    Chassis chassis = *chassis_pointer;
-    Intake intake = *intake_pointer;
-    Turret turret = *turret_pointer;
     // When enabled, automatically adjusts turret position and flywheel speed to target the goal
     okapi::QAngle launch_theta;
     okapi::QSpeed launch_vel;

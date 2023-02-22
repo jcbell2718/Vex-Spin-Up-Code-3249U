@@ -38,9 +38,6 @@ void clear_line_on_both_controllers(int line) {
 }
 
 void controller_lcd_fn() {
-    Chassis chassis = *chassis_pointer;
-    Intake intake = *intake_pointer;
-    Turret turret = *turret_pointer;
     while(true) {
         if(control_phase == "opcontrol") {
             if(turret.auto_aim_enabled) {
@@ -50,8 +47,8 @@ void controller_lcd_fn() {
             } else {
                 display_on_both_controllers("Auto-Aim: OFF", 0);
                 display_on_both_controllers("RPM: " + std::to_string(turret.launch_RPM), 1);
-            }
-            if(chassis.front_left_mtr.isOverTemp() || chassis.front_right_mtr.isOverTemp() || chassis.back_left_mtr.isOverTemp() || chassis.back_right_mtr.isOverTemp() || turret.turret_mtr.isOverTemp() || intake.intake_mtr.isOverTemp() || turret.flywheel_mtr_1.isOverTemp() || turret.flywheel_mtr_2.isOverTemp()) {
+            } 
+            if(chassis.front_left_mtr.isOverTemp() || chassis.front_right_mtr.isOverTemp() || chassis.back_left_mtr.isOverTemp() || chassis.back_right_mtr.isOverTemp() ||turret.turret_mtr.isOverTemp() || intake.intake_mtr.isOverTemp() || turret.flywheel_mtr_1.isOverTemp() || turret.flywheel_mtr_2.isOverTemp()) {
                 display_on_both_controllers("Over Temp!", 2);
             } else clear_line_on_both_controllers(2);
         } else if(control_phase == "initialize") {

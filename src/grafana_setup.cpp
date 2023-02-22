@@ -10,9 +10,6 @@ double TargetLaunchAngle(std::shared_ptr<okapi::AsyncPositionController<double, 
 std::shared_ptr<grafanalib::GUIManager> manager;
 
 void set_up_grafana() {
-    Chassis chassis = *chassis_pointer;
-    Intake intake = *intake_pointer;
-    Turret turret = *turret_pointer;
     manager = std::make_shared<grafanalib::GUIManager>();
 	manager->setRefreshRate(200); // Hopefully sufficient for wireless
 

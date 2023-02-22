@@ -41,6 +41,7 @@ class Turret {
         double launch_RPM;
 
         Turret();
+        void build_models();
         okapi::QAngle angle_to_target();
         okapi::QSpeed ideal_velocity();
         okapi::QLength trajectory_error(okapi::QAngle theta, okapi::QSpeed launch_vel);

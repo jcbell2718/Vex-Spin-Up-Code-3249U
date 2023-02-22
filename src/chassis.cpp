@@ -15,7 +15,9 @@ Chassis::Chassis() :
     left_encoder(LEFT_ENCODER_PORTS, false),
     right_encoder(RIGHT_ENCODER_PORTS, true),
     max_vel()
-{
+{}
+
+void Chassis::build_models() {
     reset_encoders();
     controller = okapi::ChassisControllerBuilder()
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
@@ -160,9 +162,6 @@ void Chassis::reset_encoders() {
 }
 
 void velocity_recording_fn() {
-    Chassis chassis = *chassis_pointer;
-    Intake intake = *intake_pointer;
-    Turret turret = *turret_pointer;
 	// Records robot velocity globally, although specific values are frozen during computations to avoid strange behavior
     chassis.update_position();
 	okapi::QLength new_x_pos = chassis.x_pos;
