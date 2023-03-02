@@ -8,12 +8,6 @@ pros::Mutex vel_mutex;
 // Global Variables
 std::string control_phase = "initialization";
 
-// Pointers to subsystems
-// The subsystems are weird when declared before initialize, but this provides a way for global access
-Chassis chassis = Chassis();
-Turret turret = Turret();
-Intake intake = Intake();
-
 // Expansion
 pros::ADIDigitalOut expansion(EXPANSION_PORT);
 

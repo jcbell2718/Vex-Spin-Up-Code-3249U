@@ -7,18 +7,18 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    chassis.build_models();
-    turret.build_models();
+    // chassis.build_models();
+    // turret.build_models();
 	
-	// Grafana
-	set_up_grafana();
+	// // Grafana
+	// set_up_grafana();
 
-	// Initialize tasks
-	pros::Task auto_aiming(auto_aim);
-	pros::Task intake_control(intake_regulation_fn);
-    pros::Task velocity_recording(velocity_recording_fn);
-    pros::Task console_output(console_output_fn);
-    pros::Task controller_lcd(controller_lcd_fn);
+	// // Initialize tasks
+	// pros::Task auto_aiming(auto_aim);
+	// pros::Task intake_control(intake_regulation_fn);
+    // pros::Task velocity_recording(velocity_recording_fn);
+    // pros::Task console_output(console_output_fn);
+    // pros::Task controller_lcd(controller_lcd_fn);
     pros::delay(1000);
     std::cout << "did ya get this far?";
 }
@@ -40,5 +40,5 @@ void competition_initialize() {}
  * the robot is enabled, this task will exit.
  */
 void disabled() {
-    control_phase = "disabled";
+    // control_phase = "disabled";
 }

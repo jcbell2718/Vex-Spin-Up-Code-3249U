@@ -14,11 +14,15 @@
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-    // while(control_phase != "opcontrol" && !pros::competition::is_connected()) pros::delay(20);
+	while(true) {
+		std::cout << "did ya get this far?";
+		pros::delay(500);
+	}
+    // while(control_phase != "opcontrol" && !pros::competition::is_connected()) {
+	// 	std::cout << "aaaaaaaaa";
+	// 	pros::delay(200);
+	// }
 
-    // Chassis chassis = *chassis_pointer;
-    // Intake intake = *intake_pointer;
-    // Turret turret = *turret_pointer;
     // control_phase = "opcontrol";
 	// okapi::Timer expansion_timer;
 	// expansion_timer.placeMark();
