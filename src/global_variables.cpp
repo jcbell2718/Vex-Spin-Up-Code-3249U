@@ -6,7 +6,7 @@ pros::Mutex target_mutex;
 pros::Mutex vel_mutex;
 
 // Global Variables
-std::string control_phase = "initialization";
+std::string control_phase = "initialize";
 
 // Expansion
 pros::ADIDigitalOut expansion(EXPANSION_PORT);

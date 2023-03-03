@@ -7,20 +7,21 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    // chassis.build_models();
-    // turret.build_models();
+    std::cout << "a" << std::endl;
+    chassis.build_models();
+    turret.build_models();
 	
 	// // Grafana
-	// set_up_grafana();
+    std::cout << "b" << std::endl;
+	//set_up_grafana();
 
 	// // Initialize tasks
-	// pros::Task auto_aiming(auto_aim);
-	// pros::Task intake_control(intake_regulation_fn);
-    // pros::Task velocity_recording(velocity_recording_fn);
-    // pros::Task console_output(console_output_fn);
-    // pros::Task controller_lcd(controller_lcd_fn);
-    pros::delay(1000);
-    std::cout << "did ya get this far?";
+	pros::Task auto_aiming(auto_aim);
+	pros::Task intake_control(intake_regulation_fn);
+    pros::Task velocity_recording(velocity_recording_fn);
+    pros::Task console_output(console_output_fn);
+    pros::Task controller_lcd(controller_lcd_fn);
+    std::cout << "c" << std::endl;
 }
 
 /**

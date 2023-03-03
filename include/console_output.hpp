@@ -1,9 +1,9 @@
-// #pragma once
-// #ifndef _CONSOLE_OUTPUT_HPP_
-// #define  _CONSOLE_OUTPUT_HPP_
+#pragma once
+#ifndef _CONSOLE_OUTPUT_HPP_
+#define  _CONSOLE_OUTPUT_HPP_
 
-// #include "main.h"
+#include "main.h"
 
-// void console_output_fn();
+void console_output_fn();
 
-// #endif  //  _CONSOLE_OUTPUT_HPP_
+#endif  //  _CONSOLE_OUTPUT_HPP_
