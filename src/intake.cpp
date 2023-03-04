@@ -42,7 +42,7 @@ void Intake::index() {
         intake_mtr.moveVoltage(0);
         pros::delay(100);
         indexer.set_value(true);
-        pros::delay(200);
+        pros::delay(400);
         indexer.set_value(false);
         pros::delay(300);
         indexing = false;

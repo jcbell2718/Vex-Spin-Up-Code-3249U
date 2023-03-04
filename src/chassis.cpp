@@ -11,9 +11,9 @@ Chassis::Chassis() :
     front_right_mtr(FRONT_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     back_left_mtr(BACK_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     back_right_mtr(BACK_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
-    center_encoder(CENTER_ENCODER_PORTS, false),
-    left_encoder(LEFT_ENCODER_PORTS, false),
-    right_encoder(RIGHT_ENCODER_PORTS, true),
+    center_encoder(CENTER_ENCODER_PORTS, true),
+    left_encoder(LEFT_ENCODER_PORTS, true),
+    right_encoder(RIGHT_ENCODER_PORTS, false),
     max_vel()
 {}
 
@@ -49,14 +49,14 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
     double target_y = -y.convert(okapi::inch); // Convert to inverted okapi y-direction
     okapi::QAngle target_theta = -theta; // Convert to default okapi clockwise angle
     // PD parameters:
-    double pkP = .1;
+    double pkP = .5;
     double pkD = 0;
-    double akP = 0;
+    double akP = .01;
     double akD = 0;
     int delay = 20;
     int stability_counter = 0;
     double a_error = rotational_distance(target_theta, controller -> getState().theta).convert(okapi::degree);
-    double x_error = target_x + controller -> getState().x.convert(okapi::inch);
+    double x_error = target_x - controller -> getState().x.convert(okapi::inch);
     double y_error = target_y - controller -> getState().y.convert(okapi::inch);
     double a_error_previous;
     double x_error_previous;
@@ -93,6 +93,7 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
         model -> fieldOrientedXArcade(unadjusted_x_input, unadjusted_y_input, akP*a_error + akD*a_error_derivative, controller -> getState().theta);
         pros::delay(delay);
     }
+    model -> xArcade(0,0,0);
 }
 
 void Chassis::drive_to_default_odom(okapi::QLength x, okapi::QLength y) {

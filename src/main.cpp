@@ -16,6 +16,7 @@
 void opcontrol() {
     while(control_phase != "opcontrol" && !pros::competition::is_connected()) pros::delay(20);
 
+	control_phase = "opcontrol";
 	okapi::Timer expansion_timer;
 	expansion_timer.placeMark();
 	double power;
