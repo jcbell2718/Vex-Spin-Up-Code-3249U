@@ -37,18 +37,19 @@ void autonomous() {
 		turret.auto_aim_enabled = false;
 		intake.intake_mode = false;
 		while(true) {
-			chassis.drive_to_default_odom(4_ft, 0_ft);
-			chassis.drive_to_default_odom(4_ft, 4_ft);
-			chassis.drive_to_default_odom(0_ft, 4_ft);
-			chassis.drive_to_default_odom(0_ft, 0_ft);
+			chassis.drive_to_PD(2_ft, 0_ft, 0_deg);
+			chassis.drive_to_PD(2_ft, 2_ft, 0_deg);
+			chassis.drive_to_PD(0_ft, 2_ft, 0_deg);
+			chassis.drive_to_PD(0_ft, 0_ft, 0_deg);
 		}
 	} else if(auton == "Roller Start Double Sweep") {
 		// Starts at roller side, sweeps along the auton line then back along the line of disks on our side
 		turret.auto_aim_enabled = true;
 		intake.intake_mode = true;
 		chassis.drive_to_PD(1.5_ft, 9.5_ft, 45_deg);
-		chassis.drive_to_PD(9.5_ft, 1.5_ft, 45_deg);
-		chassis.drive_to_PD(9_ft, 1_ft, 135_deg);
+		chassis.drive_to_PD(9_ft, 2_ft, 45_deg);
+		chassis.drive_to_PD(8_ft, 2_ft, 45_deg);
+		chassis.drive_to_PD(8_ft, 2_ft, 135_deg);
 		chassis.drive_to_PD(2_ft, 8_ft, 135_deg);
 		chassis.drive_to_PD(2_ft, 8_ft, 0_deg);
 	} else if(auton == "Shimmy-Shake") {

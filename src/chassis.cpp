@@ -25,7 +25,7 @@ void Chassis::build_models() {
 		// Gearset | gear ratio | wheel diameter | wheel track (driving) | TPR
 		.withDimensions({okapi::AbstractMotor::gearset::green, (1./1.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5GreenTPR})
 		// Tracking wheel diameter | wheel track (tracking) | middle encoder distance | center tracking wheel diameter
-		.withOdometry({{2.75_in, 13._in + 15._in/16., 5.5_in, 2.75_in}, okapi::quadEncoderTPR})
+		.withOdometry({{2.75_in, 13._in + 15._in/16., 6_in, 2.75_in}, okapi::quadEncoderTPR})
 		.notParentedToCurrentTask()
 		.buildOdometry();
     controller->setState({x_pos, -y_pos, angle});
@@ -49,10 +49,10 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
     double target_y = -y.convert(okapi::inch); // Convert to inverted okapi y-direction
     okapi::QAngle target_theta = -theta; // Convert to default okapi clockwise angle
     // PD parameters:
-    double pkP = .5;
-    double pkD = 0;
-    double akP = .01;
-    double akD = 0;
+    double pkP = .3;
+    double pkD = .025;
+    double akP = .03;
+    double akD = .0025;
     int delay = 20;
     int stability_counter = 0;
     double a_error = rotational_distance(target_theta, controller -> getState().theta).convert(okapi::degree);
@@ -86,11 +86,11 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
         // Adjustment to make path straight when not at 45 degrees at higher than max speed in one direction
         unadjusted_x_input = pkP*x_error + pkD*x_error_derivative;
         unadjusted_y_input = pkP*y_error + pkD*y_error_derivative;
-        // if(unadjusted_x_input > 1 || unadjusted_y_input > 1) input_scaler = std::max(unadjusted_x_input, unadjusted_y_input);
-        // else input_scaler = 1;
-        // x_input = unadjusted_x_input/input_scaler;
-        // y_input = unadjusted_y_input/input_scaler;
-        model -> fieldOrientedXArcade(unadjusted_x_input, unadjusted_y_input, akP*a_error + akD*a_error_derivative, controller -> getState().theta);
+        if(unadjusted_x_input > 1 || unadjusted_y_input > 1) input_scaler = std::max(unadjusted_x_input, unadjusted_y_input);
+        else input_scaler = 1;
+        x_input = unadjusted_x_input/input_scaler;
+        y_input = unadjusted_y_input/input_scaler;
+        model -> fieldOrientedXArcade(x_input, y_input, akP*a_error + akD*a_error_derivative, controller -> getState().theta);
         pros::delay(delay);
     }
     model -> xArcade(0,0,0);
