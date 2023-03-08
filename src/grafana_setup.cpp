@@ -7,11 +7,17 @@ double RobotAngleDegrees(std::shared_ptr<okapi::OdomChassisController> chassis_c
 double TargetLaunchAngle(std::shared_ptr<okapi::AsyncPositionController<double, double>> turret_controller) {return fmod(-turret_controller -> getTarget() - inertial.get_yaw() + 9000.*360., 360.);}
 
 // Manager in extended scope
-std::shared_ptr<grafanalib::GUIManager> manager;
+std::shared_ptr<grafanalib::GUIManager> grafana_manager;
+
+okapi::Motor grafana_flywheel_mtr_1(FLYWHEEL_MOTOR_PORT_1, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+okapi::Motor grafana_flywheel_mtr_2(FLYWHEEL_MOTOR_PORT_2, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations);
+grafanalib::Variable<okapi::Motor> grafana_flywheel_mtr_1_var("Flywheel Motor 1", grafana_flywheel_mtr_1);
+grafanalib::Variable<okapi::Motor> grafana_flywheel_mtr_2_var("Flywheel Motor 2", grafana_flywheel_mtr_2);
+grafanalib::VariableGroup<okapi::Motor> grafana_flywheel_motor_vars({grafana_flywheel_mtr_1_var, grafana_flywheel_mtr_2_var});
 
 void set_up_grafana() {
     manager = std::make_shared<grafanalib::GUIManager>();
-	manager->setRefreshRate(200); // Hopefully sufficient for wireless
+	manager->setRefreshRate(20); // Gonna be doing it wired regardless...
 
 	// okapi::Motor front_left_mtr = chassis.front_left_mtr;
 	// okapi::Motor front_right_mtr = chassis.front_right_mtr;
@@ -25,12 +31,9 @@ void set_up_grafana() {
 	// chassis_motor_vars.add_getter("Temperature", &okapi::Motor::getTemperature);
 	// manager->registerDataHandler(&chassis_motor_vars);
 
-	// grafanalib::Variable<okapi::Motor> flywheel_mtr_1_var("Flywheel Motor 1", turret.flywheel_mtr_1);
-	// grafanalib::Variable<okapi::Motor> flywheel_mtr_2_var("Flywheel Motor 2", turret.flywheel_mtr_2);
-	// grafanalib::VariableGroup<okapi::Motor> flywheel_motor_vars({flywheel_mtr_1_var, flywheel_mtr_2_var});
-	// flywheel_motor_vars.add_getter("Temperature", &okapi::Motor::getTemperature);
-	// flywheel_motor_vars.add_getter("Power", &okapi::Motor::getPower);
-	// manager->registerDataHandler(&flywheel_motor_vars);
+	grafana_flywheel_motor_vars.add_getter("Temperature", &okapi::Motor::getTemperature);
+	grafana_flywheel_motor_vars.add_getter("Power", &okapi::Motor::getPower);
+	grafana_manager->registerDataHandler(&grafana_flywheel_motor_vars);
 
 	// grafanalib::Variable<std::shared_ptr<okapi::AsyncVelocityController<double, double>>> flywheel_controller_var("Flywheel Controller", turret.flywheel_controller);
 	// flywheel_controller_var.add_getter("Flywheel Target RPM", &okapi::AsyncPositionController<double, double>::getTarget);

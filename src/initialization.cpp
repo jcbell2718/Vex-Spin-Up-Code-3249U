@@ -21,6 +21,7 @@ void initialize() {
     pros::Task velocity_recording(velocity_recording_fn);
     pros::Task console_output(console_output_fn);
     pros::Task controller_lcd(controller_lcd_fn);
+    turret.set_target_RPM(3400);
     std::cout << "c" << std::endl;
 }
 

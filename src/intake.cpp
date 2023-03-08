@@ -21,13 +21,27 @@ bool Intake::turn_roller() {
     okapi::Timer roller_timer;
     roller_timer.placeMark();
     if(alliance_color == "red") {
-        while(roller_optical.get_hue() > 140 && roller_timer.getDtFromMark() < 3_s) intake_mtr.moveVoltage(-12000);
-        while(roller_optical.get_hue() < 140 && roller_timer.getDtFromMark() < 3_s) intake_mtr.moveVoltage(12000);
+        // on Blue
+        while(roller_optical.get_hue() > 140 && roller_timer.getDtFromMark() < 3_s) {
+            intake_mtr.moveVoltage(8000);
+            pros::delay(5);
+        }
+        // Red
+        while(roller_optical.get_hue() < 140 && roller_timer.getDtFromMark() < 3_s) {
+            intake_mtr.moveVoltage(-8000);
+            pros::delay(5);
+        }
         intake_mtr.moveVoltage(0);
         intake_mtr.setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
     } else {
-        while(roller_optical.get_hue() < 140 && roller_timer.getDtFromMark() < 3_s) intake_mtr.moveVoltage(-12000);
-        while(roller_optical.get_hue() > 140 && roller_timer.getDtFromMark() < 3_s) intake_mtr.moveVoltage(12000);
+        while(roller_optical.get_hue() < 140 && roller_timer.getDtFromMark() < 3_s) {
+            intake_mtr.moveVoltage(8000);
+            pros::delay(5);
+        }
+        while(roller_optical.get_hue() > 140 && roller_timer.getDtFromMark() < 3_s) {
+            intake_mtr.moveVoltage(-8000);
+            pros::delay(5);
+        }
         intake_mtr.moveVoltage(0);
         intake_mtr.setBrakeMode(okapi::AbstractMotor::brakeMode::brake);
     }
@@ -52,11 +66,17 @@ void Intake::index() {
 void Intake::PTO_to_intake() {
     PTO.set_value(false);
 	intake_mode = true;
+    intake_mtr.moveVoltage(12000);
+    pros::delay(500);
+    intake_mtr.moveVoltage(0);
 }
 
 void Intake::PTO_to_roller_mech() {
     PTO.set_value(true);
 	intake_mode = false;
+    intake_mtr.moveVoltage(12000);
+    pros::delay(500);
+    intake_mtr.moveVoltage(0);
 }
 
 Intake intake = Intake();
