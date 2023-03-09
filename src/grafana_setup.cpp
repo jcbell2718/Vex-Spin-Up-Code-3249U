@@ -16,8 +16,8 @@ grafanalib::Variable<okapi::Motor> grafana_flywheel_mtr_2_var("Flywheel Motor 2"
 grafanalib::VariableGroup<okapi::Motor> grafana_flywheel_motor_vars({grafana_flywheel_mtr_1_var, grafana_flywheel_mtr_2_var});
 
 void set_up_grafana() {
-    manager = std::make_shared<grafanalib::GUIManager>();
-	manager->setRefreshRate(20); // Gonna be doing it wired regardless...
+    grafana_manager = std::make_shared<grafanalib::GUIManager>();
+	grafana_manager->setRefreshRate(20); // Gonna be doing it wired regardless...
 
 	// okapi::Motor front_left_mtr = chassis.front_left_mtr;
 	// okapi::Motor front_right_mtr = chassis.front_right_mtr;
@@ -33,6 +33,7 @@ void set_up_grafana() {
 
 	grafana_flywheel_motor_vars.add_getter("Temperature", &okapi::Motor::getTemperature);
 	grafana_flywheel_motor_vars.add_getter("Power", &okapi::Motor::getPower);
+	grafana_flywheel_motor_vars.add_getter("Actual Velocity", &okapi::Motor::getActualVelocity);
 	grafana_manager->registerDataHandler(&grafana_flywheel_motor_vars);
 
 	// grafanalib::Variable<std::shared_ptr<okapi::AsyncVelocityController<double, double>>> flywheel_controller_var("Flywheel Controller", turret.flywheel_controller);
@@ -49,5 +50,5 @@ void set_up_grafana() {
 	// chassis_controller_var.add_getter("Orientation", &RobotAngleDegrees);
 	// manager->registerDataHandler(&chassis_controller_var);
 
-	manager->startTask();
+	grafana_manager->startTask();
 }

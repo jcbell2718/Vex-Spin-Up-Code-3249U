@@ -40,7 +40,7 @@ void Chassis::build_models() {
 	max_vel = model -> getMaxVelocity();
 }
 
-void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta) {
+void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta, okapi::QTime timeout) {
     // Drives to position on field using PD control
     // Inputs treat home goal corner as bottom left of first quadrant of coordinate plane
     // Input rotations are counterclockwise from x-axis
@@ -70,7 +70,9 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
     double y_input;
     double input_scaler;
     double total_error = abs(a_error) + abs(x_error) + abs(y_error);
-    while(stability_counter < 15) {
+    okapi::Timer timeout_timer;
+    timeout_timer.placeMark();
+    while(stability_counter < 15 && (timeout_timer.getDtFromMark() < timeout || timeout == -1_s)) {
         a_error_previous = a_error;
         x_error_previous = x_error;
         y_error_previous = y_error;

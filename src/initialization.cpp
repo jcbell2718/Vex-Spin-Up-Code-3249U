@@ -8,19 +8,19 @@
  */
 void initialize() {
     std::cout << "a" << std::endl;
-    chassis.build_models();
+    // chassis.build_models();
     turret.build_models();
 	
-	// // Grafana
+	// Grafana
     std::cout << "b" << std::endl;
-	//set_up_grafana();
+	set_up_grafana();
 
-	// // Initialize tasks
-	pros::Task auto_aiming(auto_aim);
-	pros::Task intake_control(intake_regulation_fn);
-    pros::Task velocity_recording(velocity_recording_fn);
+	// Initialize tasks
+	// pros::Task auto_aiming(auto_aim);
+	// pros::Task intake_control(intake_regulation_fn);
+    // pros::Task velocity_recording(velocity_recording_fn);
     pros::Task console_output(console_output_fn);
-    pros::Task controller_lcd(controller_lcd_fn);
+    // pros::Task controller_lcd(controller_lcd_fn);
     turret.set_target_RPM(3400);
     std::cout << "c" << std::endl;
 }

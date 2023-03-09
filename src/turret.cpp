@@ -44,8 +44,8 @@ void Turret::build_models() {
         .withSensor(okapi::IntegratedEncoder(flywheel_mtr_1))
         // Not actually, but equivalent. It's really 64:84 3600 rpm cartridge
         .withGearset({okapi::AbstractMotor::gearset::blue, (64./(6.*84.))})
-        .withGains({.3,0,0,0})
-        .withVelMath(okapi::VelMathFactory::createPtr(okapi::imev5BlueTPR * (64./(6.*84.))))
+        // .withGains({100.,0,100.,0.})
+        // .withVelMath(okapi::VelMathFactory::createPtr(okapi::imev5BlueTPR * (64./(6.*84.))))
         .withLogger(okapi::Logger::getDefaultLogger())
         .notParentedToCurrentTask()
         .build();
