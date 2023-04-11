@@ -9,8 +9,8 @@ extern pros::Mutex target_mutex;
 extern pros::Mutex vel_mutex;
 
 extern std::string control_phase;
+extern bool is_skills;
 
-extern pros::ADIDigitalOut expansion;
 extern pros::Imu inertial;
 extern pros::Gps gps;
 

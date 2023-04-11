@@ -5,8 +5,8 @@ okapi::QAngle rotational_distance(okapi::QAngle target, okapi::QAngle current) {
     double T;
     double C;
     double absolute_minimum;
-    T = fmod(target.convert(okapi::degree) + 9000.*360., 360.);
-    C = fmod(current.convert(okapi::degree) + 9000.*360., 360.);
+    T = fmod(target.convert(okapi::degree) + 90.*360., 360.);
+    C = fmod(current.convert(okapi::degree) + 90.*360., 360.);
     absolute_minimum = std::min({abs(T - C), abs(T - C + 360.), abs(T - C - 360.)});
     if(absolute_minimum == abs(T - C)) return (T - C)*okapi::degree;
     else if(absolute_minimum == abs(T - C + 360)) return (T - C + 360.)*okapi::degree;

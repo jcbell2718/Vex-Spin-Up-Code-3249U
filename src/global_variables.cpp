@@ -7,9 +7,7 @@ pros::Mutex vel_mutex;
 
 // Global Variables
 std::string control_phase = "initialize";
-
-// Expansion
-pros::ADIDigitalOut expansion(EXPANSION_PORT);
+bool is_skills = false;
 
 // Other
 pros::Imu inertial = pros::Imu(INERTIAL_PORT);

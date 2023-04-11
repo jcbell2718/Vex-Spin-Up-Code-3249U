@@ -21,11 +21,11 @@ void Chassis::build_models() {
     reset_encoders();
     controller = okapi::ChassisControllerBuilder()
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
-		.withSensors(left_encoder, right_encoder, center_encoder)
+		.withSensors(left_encoder, right_encoder, center_encoder) // 
 		// Gearset | gear ratio | wheel diameter | wheel track (driving) | TPR
 		.withDimensions({okapi::AbstractMotor::gearset::green, (1./1.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5GreenTPR})
 		// Tracking wheel diameter | wheel track (tracking) | middle encoder distance | center tracking wheel diameter
-		.withOdometry({{2.75_in, 13._in + 15._in/16., 6_in, 2.75_in}, okapi::quadEncoderTPR})
+		.withOdometry({{2.75_in, 14._in - 6.15_in/128, 6_in, 2.75_in}, okapi::quadEncoderTPR}) //
 		.notParentedToCurrentTask()
 		.buildOdometry();
     controller->setState({x_pos, -y_pos, angle});

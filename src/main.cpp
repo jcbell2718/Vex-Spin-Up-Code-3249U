@@ -23,9 +23,7 @@ void opcontrol() {
 	double turning;
 	double strafe;
 
-	turret.auto_aim_enabled = false;
-	turret.set_target_RPM(3400.);
-	intake.intake_mode = true;
+	turret.auto_aim_enabled = true;
 	while(true) {
 		// Chassis Control
         power = powf(master.getAnalog(okapi::ControllerAnalog::leftY), 3.);
@@ -58,13 +56,8 @@ void opcontrol() {
 			else if(partner_R2.changedToPressed()) turret.set_target_RPM(turret.launch_RPM - 50);
 		}
 
-		// Intake PTO
-		if(partner_left.changedToPressed()) intake.PTO_to_roller_mech();
-		else if(partner_right.changedToReleased()) intake.PTO_to_intake();
-
 		// Expansion Release
-		if(expansion_timer.millis() >= 95_s &&  partner_down.changedToPressed()) expansion.set_value(true);
-		else if(partner_down.changedToPressed()) expansion.set_value(false);
+		if((expansion_timer.millis() >= 95_s || is_skills) && partner_down.changedToPressed()) expansion.toggle();
 
 		// Odometry Reset Control
 		if(master_B.changedToReleased() && partner_A.isPressed()) {

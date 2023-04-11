@@ -18,7 +18,8 @@ class Turret {
         // Constants
         okapi::QLength launch_height;
         okapi::QAngle launch_angle;
-        okapi::QLength offset;
+        okapi::QLength chassis_offset;
+        okapi::QLength turret_offset;
         okapi::QAngle alpha;
         okapi::QLength goal_height;
         okapi::QAcceleration g;
@@ -29,6 +30,7 @@ class Turret {
         okapi::QLength opponent_goal_y;
         okapi::QLength alliance_goal_x;
         okapi::QLength alliance_goal_y;
+         okapi::QAngle orientation;
         okapi::QLength x_pos;
         okapi::QLength y_pos;
         okapi::QSpeed x_vel;

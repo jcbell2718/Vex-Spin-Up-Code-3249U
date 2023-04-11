@@ -37,24 +37,25 @@
 /**
  * Global defines
  */
-#define FRONT_LEFT_MOTOR_PORT 9
-#define FRONT_RIGHT_MOTOR_PORT 1
-#define BACK_LEFT_MOTOR_PORT 10
-#define BACK_RIGHT_MOTOR_PORT 2
-#define TURRET_MOTOR_PORT 5
-#define FLYWHEEL_MOTOR_PORT_1 6
-#define FLYWHEEL_MOTOR_PORT_2 7
-#define INTAKE_MOTOR_PORT 18
-#define ROLLER_OPTICAL_PORT 4
-#define INERTIAL_PORT 19
-#define GPS_PORT 20
-#define CENTER_ENCODER_PORTS {17, 'C', 'D'}
-#define LEFT_ENCODER_PORTS {17, 'A', 'B'}
-#define RIGHT_ENCODER_PORTS {17, 'E', 'F'}
+#define FRONT_LEFT_MOTOR_PORT 10
+#define FRONT_RIGHT_MOTOR_PORT 9
+#define BACK_LEFT_MOTOR_PORT 8
+#define BACK_RIGHT_MOTOR_PORT 7
+#define FLYWHEEL_MOTOR_PORT_1 4
+#define FLYWHEEL_MOTOR_PORT_2 5
+#define TURRET_MOTOR_PORT 3
+#define INTAKE_MOTOR_PORT 2
+#define ROLLER_OPTICAL_PORT 1
+#define INERTIAL_PORT 20
+#define GPS_PORT 11
+#define LEFT_ENCODER_PORTS {6, 'E', 'F'}
+#define CENTER_ENCODER_PORTS {6, 'C', 'D'}
+#define RIGHT_ENCODER_PORTS {6, 'A', 'B'}
 #define LIMIT_SWITCH_PORT 'A'
 #define INDEXER_PORT 'H'
-#define PTO_PORT 'G'
-#define EXPANSION_PORT 'B'
+#define PTO_PORT 'E'
+#define EXPANSION_PORT 'D'
+#define EXPANSION_PORT_2 'G'
 
 
 #include "api.h"
@@ -68,6 +69,7 @@
 
 #include "global_variables.hpp"
 #include "general_functions.hpp"
+#include "expansion.hpp"
 #include "chassis.hpp"
 #include "turret.hpp"
 #include "intake.hpp"
