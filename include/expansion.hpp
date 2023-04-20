@@ -8,6 +8,7 @@ class Expansion {
     public:
         pros::ADIDigitalOut expansion;
         pros::ADIDigitalOut expansion2;
+        pros::ADIDigitalOut center_expansion;
         bool expanded;
 
         Expansion();

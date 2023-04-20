@@ -1,23 +1,23 @@
 #include "main.h"
 
 Turret::Turret() : 
-    turret_mtr(TURRET_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::degrees),
+    turret_mtr(TURRET_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::degrees),
     flywheel_mtr_1(FLYWHEEL_MOTOR_PORT_1, false, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     flywheel_mtr_2(FLYWHEEL_MOTOR_PORT_2, true, okapi::AbstractMotor::gearset::blue, okapi::AbstractMotor::encoderUnits::rotations),
     flywheel_mtrs({flywheel_mtr_1, flywheel_mtr_2}),
     launch_height(15.75_in),
     launch_angle(27.5_deg),
-    chassis_offset(1.25_in),
+    chassis_offset(1.5_in),
     turret_offset(6.02_in),
     alpha(-48.37_deg),
     goal_height(30._in),
     g(1._G),
     auto_aim_enabled(false),
     aiming_for_low_goal(false),
-    opponent_goal_x(1.5_ft),
-    opponent_goal_y(1.5_ft),
-    alliance_goal_x(10.5_ft),
-    alliance_goal_y(10.5_ft),
+    opponent_goal_x(141.25_in - (123.75_in)),
+    opponent_goal_y(141.25_in - (123.75_in)),
+    alliance_goal_x(123.75_in),
+    alliance_goal_y(123.75_in),
     orientation(0._deg),
     x_pos(0._ft),
     y_pos(0._ft),
@@ -150,7 +150,7 @@ void Turret::set_target_angle(okapi::QAngle angle) {
 
 void Turret::set_target_velocity(okapi::QSpeed velocity) {
     launch_velocity = velocity;
-    launch_RPM = (launch_velocity*2./(3_in*okapi::pi)*1_min).getValue(); // ((in/min)*(edge speed/resulting speed))*(rot/in)*1 minute
+    launch_RPM = (launch_velocity*2./(3_in*okapi::pi)*1_min).getValue()*1.3; // ((in/min)*(edge speed/resulting speed))*(rot/in)*1 minute
     flywheel_controller -> setTarget(launch_RPM);
 }
 
@@ -178,7 +178,7 @@ void auto_aim() {
             if(turret.turret_controller -> isDisabled()) turret.turret_controller -> flipDisable();
             turret.update_position(chassis);
             target_mutex.take();
-            if(turret.aiming_for_low_goal) { //  || true
+            if(turret.aiming_for_low_goal) {
                 // Assumes ideal values are true when aiming for the low goal, since accuracy is less important
                 launch_theta = turret.angle_to_target() - (45_deg * 1.45_m/turret.ideal_velocity() / okapi::second);
                 launch_vel = 1.15 * turret.ideal_velocity();
@@ -195,16 +195,11 @@ void auto_aim() {
                 oscillating = false;
                 // Calculate initial error outside loop to remove need to store past launch parameters
                 error = turret.trajectory_error(launch_theta, launch_vel);
-                error_dv = turret.trajectory_error(launch_theta, launch_vel + .001_mps);
-                error_dt = turret.trajectory_error(launch_theta + .001_rad, launch_vel);
+                error_dv = turret.trajectory_error(launch_theta, launch_vel + .01*1_in/1_s);
+                error_dt = turret.trajectory_error(launch_theta + .1_deg, launch_vel);
                 error_0 = error;
-                std::cout << "Vel: " << launch_vel.convert(okapi::mps) << std::endl;
-                std::cout << "Theta: " << launch_theta.convert(okapi::degree) << std::endl;
-                std::cout << "Error: " << error.convert(okapi::inch) << std::endl;
-                std::cout << "Error Dv: " << error_dv.convert(okapi::inch) << std::endl;
-                std::cout << "Error Dt: " << error_dt.convert(okapi::inch) << std::endl;
                 // Gradient descent loop - exits if it gets stuck at depth 50
-                while(error > 2_in && depth < 50) {
+                while(error > 1_in && depth < 50) {
                     // Once error starts increasing, high r is leading to overshoot and oscillation
                     if(error > error_0) oscillating = true;
                     // Once oscillation begins, have r approach 2 - smaller value better at high curvature
@@ -231,9 +226,10 @@ void auto_aim() {
             std::cout << "theta: " << launch_theta.convert(okapi::degree) << std::endl;
             // Converts the output theta into a value that prevents overrotation and only cares about equivalent angle, not absolute angle
             // Launch theta negated to convert to clockwise equivalent for compatibility with okapi odometry
-            turret.set_target_angle(unnormalized_rotation_to(-launch_theta + turret.orientation, turret.turret_absolute_angle)); 
+            turret.set_target_angle(unnormalized_rotation_to(launch_theta - turret.orientation, turret.turret_absolute_angle)); 
+            std::cout << turret.orientation.convert(okapi::degree) << std::endl;
             turret.set_target_velocity(launch_vel);
-            pros::delay(250);
+            pros::delay(50);
         } else if(control_phase == "opcontrol") {
             if(!turret.turret_controller -> isDisabled()) turret.turret_controller -> flipDisable();
             turret.turret_mtr.moveVoltage(12000 * partner.getAnalog(okapi::ControllerAnalog::leftX));

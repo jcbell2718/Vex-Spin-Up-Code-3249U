@@ -1,20 +1,30 @@
 #include "main.h"
 
 int auton_index = 0;
-std::vector<std::string> auton_list = {"Testing","None", "PD Tuning", "Spin Test", "Roller Start Double Sweep", "Roller Only", "Skills 1"};
+std::vector<std::string> auton_list = {"Testing", "None", "Left WP", "Roller Only", "Double Sweep", "Skills 1", "PD Tuning", "Spin Test"};
 std::string auton = auton_list[auton_index];
 
 void auton_setup() {
     chassis.reset_encoders();
     turret.turret_controller -> tarePosition();
     inertial.tare();
-    if(auton == "Roller Start Double Sweep") chassis.set_position(1_ft, 9_ft, 0_deg);
-    else if(auton == "Roller Only") chassis.set_position(1_ft, 9_ft, 0_deg);
-	else if(auton == "Skills 1") {
+	if(auton == "Testing") {
+		is_skills = true;
+		chassis.set_position(10.5_in, 110_in, 0_deg);
+	} else if(auton == "Double Sweep") {
+		is_skills = false;
+		chassis.set_position(10.5_in, 110_in, 0_deg);
+	} else if(auton == "Roller Only") {
+		is_skills = false;
+		chassis.set_position(10.5_in, 110_in, 0_deg);
+	} else if(auton == "Left WP") {
+		is_skills = false;
+		chassis.set_position(10.5_in, 110_in, 0_deg);
+	} else if(auton == "Skills 1") {
+		is_skills = true;
 		chassis.set_position(23.5_in/2* 5, 23.5_in/2* 11, 270_deg);
 		turret.set_target_angle(-100_deg);
 		intake.PTO_to_roller_mech();
-		is_skills = true;
 	} else chassis.set_position(0_ft, 0_ft, 0_deg);
 }
 
@@ -56,7 +66,7 @@ void autonomous() {
 			chassis.drive_to_PD(0_ft, 0_ft, 0_deg);
 			pros::delay(500);
 		}
-	} else if(auton == "Roller Start Double Sweep") {
+	} else if(auton == "Double Sweep") {
 		// Starts at roller side, sweeps along the auton line then back along the line of disks on our side
 		turret.auto_aim_enabled = true;
 		intake.intake_mode = true;
@@ -75,6 +85,41 @@ void autonomous() {
 		intake.turn_roller();
 		chassis.drive_to_PD(1._ft, 9.5_ft, 0_deg);
 		intake.PTO_to_intake();
+	} else if(auton == "Left WP") {
+		// Shoots 2 preloads, turns the roller, shoots near triple disk stack
+		turret.auto_aim_enabled = true;
+		// Spin up
+		pros::delay(7000);
+		// First disk
+		intake.index();
+		// Intake second disk
+		intake.PTO_to_intake();
+		turret.auto_aim_enabled = false;
+		pros::delay(500);
+		// Reset turret slop
+		turret.set_target_angle(turret.turret_absolute_angle - 15_deg);
+		pros::delay(1000);
+		turret.auto_aim_enabled = true;
+		pros::delay(1500);
+		// Fire second disk
+		intake.index();
+		// Roller
+		intake.PTO_to_roller_mech();
+		chassis.drive_to_PD(8_in, 110_in, 0_deg, 2_s, 1_s);
+		intake.turn_roller();
+		chassis.drive_to_PD(11_in, 110_in, 0_deg);
+		// Triple stack
+		intake.PTO_to_intake();
+		chassis.drive_to_PD(23._in, 23._in*4, -45_deg);
+		chassis.drive_to_PD(23._in*(1.+.75), 23._in*(4.-.75), -45_deg);
+		pros::delay(500);
+		intake.index();
+		chassis.drive_to_PD(23._in*(1.+1.), 23._in*(4.-1.), -45_deg);
+		pros::delay(500);
+		intake.index();
+		chassis.drive_to_PD(23._in*(1.+1.25), 23._in*(4.-1.25), -45_deg);
+		pros::delay(500);
+		intake.index();
 	} else if(auton == "Skills 1") {
 		// 2 rollers, match loads, other 2 rollers, more match loads, expansion
 		turret.auto_aim_enabled = false;

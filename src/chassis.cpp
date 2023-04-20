@@ -6,14 +6,15 @@ Chassis::Chassis() :
     x_vel(0._mps),
     y_vel(0._mps),
     angle(0._deg),
+    dangledt(0._deg/1_s),
     using_gps(false),
     front_left_mtr(FRONT_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     front_right_mtr(FRONT_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     back_left_mtr(BACK_LEFT_MOTOR_PORT, false, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     back_right_mtr(BACK_RIGHT_MOTOR_PORT, true, okapi::AbstractMotor::gearset::green, okapi::AbstractMotor::encoderUnits::rotations),
     center_encoder(CENTER_ENCODER_PORTS, true),
-    left_encoder(LEFT_ENCODER_PORTS, true),
-    right_encoder(RIGHT_ENCODER_PORTS, false),
+    left_encoder(LEFT_ENCODER_PORTS, false),
+    right_encoder(RIGHT_ENCODER_PORTS, true),
     max_vel()
 {}
 
@@ -21,7 +22,7 @@ void Chassis::build_models() {
     reset_encoders();
     controller = okapi::ChassisControllerBuilder()
 		.withMotors(front_left_mtr, front_right_mtr, back_right_mtr, back_left_mtr)
-		.withSensors(left_encoder, right_encoder, center_encoder) // 
+		.withSensors(left_encoder, right_encoder, center_encoder)
 		// Gearset | gear ratio | wheel diameter | wheel track (driving) | TPR
 		.withDimensions({okapi::AbstractMotor::gearset::green, (1./1.)}, {{3.25_in, 15._in + 15._in/16.}, okapi::imev5GreenTPR})
 		// Tracking wheel diameter | wheel track (tracking) | middle encoder distance | center tracking wheel diameter
@@ -40,7 +41,7 @@ void Chassis::build_models() {
 	max_vel = model -> getMaxVelocity();
 }
 
-void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta, okapi::QTime timeout) {
+void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta, okapi::QTime timeout, okapi::QTime min_time) {
     // Drives to position on field using PD control
     // Inputs treat home goal corner as bottom left of first quadrant of coordinate plane
     // Input rotations are counterclockwise from x-axis
@@ -83,7 +84,7 @@ void Chassis::drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle thet
         a_error_derivative = (a_error - a_error_previous)/(delay/1000.);
         x_error_derivative = (x_error - x_error_previous)/(delay/1000.);
         y_error_derivative = (y_error - y_error_previous)/(delay/1000.);
-        if(total_error < 5) stability_counter++; // Counter to determine if the robot has settled
+        if(total_error < 2 && (timeout_timer.getDtFromMark() > min_time || min_time == -1_s)) stability_counter++; // Counter to determine if the robot has settled
         else stability_counter = 0;
         // Adjustment to make path straight when not at 45 degrees at higher than max speed in one direction
         unadjusted_x_input = pkP*x_error + pkD*x_error_derivative;
@@ -171,8 +172,10 @@ void velocity_recording_fn() {
     chassis.update_position();
 	okapi::QLength new_x_pos = chassis.x_pos;
 	okapi::QLength new_y_pos = chassis.y_pos;
+    okapi::QAngle new_angle = chassis.angle;
 	okapi::QLength old_x_pos;
 	okapi::QLength old_y_pos;
+    okapi::QAngle old_angle;
     okapi::AverageFilter<3> vel_filter;
     okapi::Timer timer;
     timer.getDt();
@@ -181,13 +184,16 @@ void velocity_recording_fn() {
         pros::delay(20);
 		old_x_pos = new_x_pos;
 		old_y_pos = new_y_pos;
+        old_angle = new_angle;
 	    if(chassis.using_gps) chassis.update_position_gps(); else chassis.update_position();
         new_x_pos = chassis.x_pos;
 		new_y_pos = chassis.y_pos;
+        new_angle = chassis.angle;
         vel_mutex.take();
         delay = timer.getDt();
 		chassis.x_vel = vel_filter.filter((new_x_pos-old_x_pos).convert(okapi::inch))*okapi::inch/(delay);
 		chassis.y_vel = vel_filter.filter((new_y_pos-old_y_pos).convert(okapi::inch))*okapi::inch/(delay);
+        chassis.dangledt = vel_filter.filter((new_angle-old_angle).convert(okapi::degree))*okapi::degree/(delay);
         vel_mutex.give();
 	}
 }

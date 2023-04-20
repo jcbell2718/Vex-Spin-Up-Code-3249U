@@ -85,14 +85,12 @@ void intake_regulation_fn() {
     // Regulates the intake, indexer, and roller mechanism during both autonomous and driver control periods
     while(true) {
         // Intake PTO
-		if(partner_left.changedToPressed()) intake.PTO_to_roller_mech();
-		else if(partner_right.changedToReleased()) intake.PTO_to_intake();
-        if(intake.intake_mode) {
-            if((turret.auto_aim_enabled && intake.disk_switch.changedToPressed()) || (partner_up.changedToPressed())) intake.index();
-            intake.intake_mtr.moveVoltage(12000);
-        } else {
-            if((turret.auto_aim_enabled && intake.disk_switch.changedToPressed()) || (!turret.auto_aim_enabled && partner_up.changedToPressed())) intake.index();
-            if(partner_A.changedToPressed())  intake.turn_roller();
+		if(partner_A.changedToPressed()) intake.PTO_to_roller_mech();
+		else if(partner_left.changedToReleased()) intake.PTO_to_intake();
+        if((turret.auto_aim_enabled && intake.disk_switch.changedToPressed()) || (partner_up.changedToPressed())) intake.index();
+        if(intake.intake_mode)  intake.intake_mtr.moveVoltage(12000);
+        else {
+            if(partner_X.changedToPressed())  intake.turn_roller();
             intake.intake_mtr.moveVoltage(0);
         }
         pros::delay(20);

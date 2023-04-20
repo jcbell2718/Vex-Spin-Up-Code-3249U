@@ -41,7 +41,7 @@ void opcontrol() {
 		}
 
 		// Auto-Aim Toggle
-		if(partner_X.changedToPressed()) turret.auto_aim_enabled = true;
+		if(partner_B.changedToPressed()) turret.auto_aim_enabled = true;
 		else if(partner_Y.changedToPressed()) {
 			turret.auto_aim_enabled = false;
 			// Truncates flywheel RPM to be a multiple of 50 (manual increment amount)
@@ -60,7 +60,7 @@ void opcontrol() {
 		if((expansion_timer.millis() >= 95_s || is_skills) && partner_down.changedToPressed()) expansion.toggle();
 
 		// Odometry Reset Control
-		if(master_B.changedToReleased() && partner_A.isPressed()) {
+		if(master_B.changedToReleased() && master_A.isPressed()) {
 			chassis.align_odometry_orientation(master_up.isPressed() - master_down.isPressed(), master_left.isPressed() - master_right.isPressed());
 		} else if(master_B.changedToReleased()) {
             chassis.align_odometry_position(master_up.isPressed() - master_down.isPressed(), master_left.isPressed() - master_right.isPressed());

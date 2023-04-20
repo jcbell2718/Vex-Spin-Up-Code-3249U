@@ -13,6 +13,7 @@ class Chassis {
         okapi::QSpeed x_vel;
         okapi::QSpeed y_vel;
         okapi::QAngle angle;
+        okapi::QAngularSpeed dangledt;
         bool using_gps;
         // Chassis
         okapi::Motor front_left_mtr;
@@ -29,7 +30,7 @@ class Chassis {
 
         Chassis();
         void build_models();
-        void drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta, okapi::QTime timeout = -1_s);
+        void drive_to_PD(okapi::QLength x, okapi::QLength y, okapi::QAngle theta, okapi::QTime timeout = -1_s, okapi::QTime min_time = -1_s);
         void drive_to_default_odom(okapi::QLength x, okapi::QLength y);
         void drive_raw(double forward, double strafe, double yaw);
         void update_position();

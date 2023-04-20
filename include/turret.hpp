@@ -30,7 +30,7 @@ class Turret {
         okapi::QLength opponent_goal_y;
         okapi::QLength alliance_goal_x;
         okapi::QLength alliance_goal_y;
-         okapi::QAngle orientation;
+        okapi::QAngle orientation;
         okapi::QLength x_pos;
         okapi::QLength y_pos;
         okapi::QSpeed x_vel;
