@@ -6,8 +6,7 @@
 
 class Expansion {
     public:
-        pros::ADIDigitalOut expansion;
-        pros::ADIDigitalOut expansion2;
+        pros::ADIDigitalOut angry_birds;
         pros::ADIDigitalOut center_expansion;
         bool expanded;
 

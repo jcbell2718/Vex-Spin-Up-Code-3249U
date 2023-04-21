@@ -88,7 +88,7 @@ void intake_regulation_fn() {
 		if(partner_A.changedToPressed()) intake.PTO_to_roller_mech();
 		else if(partner_left.changedToReleased()) intake.PTO_to_intake();
         if((turret.auto_aim_enabled && intake.disk_switch.changedToPressed()) || (partner_up.changedToPressed())) intake.index();
-        if(intake.intake_mode)  intake.intake_mtr.moveVoltage(12000);
+        if(intake.intake_mode && !intake.indexing)  intake.intake_mtr.moveVoltage(12000);
         else {
             if(partner_X.changedToPressed())  intake.turn_roller();
             intake.intake_mtr.moveVoltage(0);

@@ -54,8 +54,7 @@
 #define LIMIT_SWITCH_PORT 'A'
 #define INDEXER_PORT 'H'
 #define PTO_PORT 'E'
-#define EXPANSION_PORT 'D'
-#define EXPANSION_PORT_2 'G'
+#define ANGRY_BIRDS_PORT 'G'
 #define CENTER_EXPANSION_PORT 'F'
 
 

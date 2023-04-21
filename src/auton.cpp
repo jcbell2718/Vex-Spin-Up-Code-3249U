@@ -89,7 +89,7 @@ void autonomous() {
 		// Shoots 2 preloads, turns the roller, shoots near triple disk stack
 		turret.auto_aim_enabled = true;
 		// Spin up
-		pros::delay(7000);
+		pros::delay(6000);
 		// First disk
 		intake.index();
 		// Intake second disk
@@ -100,7 +100,7 @@ void autonomous() {
 		turret.set_target_angle(turret.turret_absolute_angle - 15_deg);
 		pros::delay(1000);
 		turret.auto_aim_enabled = true;
-		pros::delay(1500);
+		pros::delay(2500);
 		// Fire second disk
 		intake.index();
 		// Roller
