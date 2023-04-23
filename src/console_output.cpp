@@ -15,7 +15,10 @@ void console_output_fn() {
         // std::cout << "Front Right Motor Integrated Encoder: " << chassis.front_right_mtr.getPosition() << std::endl;
         // std::cout << "Back Left Motor Integrated Encoder:   " << chassis.back_left_mtr.getPosition() << std::endl;
         // std::cout << "Back Right Motor Integrated Encoder:  " << chassis.back_right_mtr.getPosition() << std::endl;
-        // std::cout << "Hue:  " << intake.roller_optical.get_hue() << std::endl;
+        // std::cout << "Roller Hue:  " << intake.roller_optical.get_hue() << std::endl;
+        // std::cout << "Indexer Optical Hue:  " << intake.indexer_optical.get_hue() << std::endl;
+        // std::cout << "Indexer Optical Saturation: " << intake.indexer_optical.get_saturation() << std::endl;
+        // std::cout << "Indexer Optical Proximity: " << intake.indexer_optical.get_proximity() << std::endl;
         // std::cout << "Center encoder:  " << chassis.center_encoder.get() << std::endl;
         // std::cout << "Left encoder:  " << chassis.left_encoder.get() << std::endl;
         // std::cout << "Right encoder:  " << chassis.right_encoder.get() << std::endl;

@@ -45,17 +45,18 @@
 #define FLYWHEEL_MOTOR_PORT_2 20
 #define TURRET_MOTOR_PORT 3
 #define INTAKE_MOTOR_PORT 2
-#define ROLLER_OPTICAL_PORT 1
-#define INERTIAL_PORT 20
+#define ROLLER_OPTICAL_PORT 6
+#define INDEXER_OPTICAL_PORT 18
+#define INERTIAL_PORT 11
 #define GPS_PORT 11
-#define LEFT_ENCODER_PORTS {6, 'E', 'F'}
-#define CENTER_ENCODER_PORTS {6, 'C', 'D'}
-#define RIGHT_ENCODER_PORTS {6, 'A', 'B'}
-#define LIMIT_SWITCH_PORT 'A'
-#define INDEXER_PORT 'H'
+#define LEFT_ENCODER_PORTS {17, 'E', 'F'}
+#define CENTER_ENCODER_PORTS {17, 'C', 'D'}
+#define RIGHT_ENCODER_PORTS {17, 'A', 'B'}
+#define DISK_SWITCH_PORT 'D'
 #define PTO_PORT 'E'
-#define ANGRY_BIRDS_PORT 'G'
 #define CENTER_EXPANSION_PORT 'F'
+#define ANGRY_BIRDS_PORT 'G'
+#define INDEXER_PORT 'H'
 
 
 #include "api.h"
@@ -66,6 +67,7 @@
 #include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 #include "pros-grafana-lib/api.h"
+#include "pros/apix.h"
 
 #include "global_variables.hpp"
 #include "general_functions.hpp"

@@ -38,7 +38,7 @@ void Turret::build_models() {
         .withSensor(okapi::IntegratedEncoder(turret_mtr))
         // Gearset | gear ratio
         .withGearset({okapi::AbstractMotor::gearset::blue, (148./12.)})
-        .withGains({0.002,0.001,0.})
+        .withGains({0.003,0.,0.})
         .withLogger(okapi::Logger::getDefaultLogger())
         .notParentedToCurrentTask()
         .build();
@@ -224,7 +224,7 @@ void auto_aim() {
             target_mutex.give();
             // Converts the output theta into a value that prevents overrotation and only cares about equivalent angle, not absolute angle
             // Launch theta negated to convert to clockwise equivalent for compatibility with okapi odometry
-            turret.set_target_angle(unnormalized_rotation_to(launch_theta - turret.orientation, turret.turret_absolute_angle)); 
+            turret.set_target_angle(unnormalized_rotation_to(launch_theta - turret.orientation - chassis.dangledt * .5_s, turret.turret_absolute_angle)); 
             turret.set_target_velocity(launch_vel);
             pros::delay(50);
         } else if(control_phase == "opcontrol") {
